@@ -40,7 +40,7 @@ Use this when you want the runtime to behave like a real deployment and when you
 
 ### Production-Style Runtime With Lean Flow Checking
 
-Same env-var prerequisites as above; additionally point `CERTIOR_FLOW_CHECK_BINARY` at the built Lean binary so the live verifier participates.
+Same env-var prerequisites as above, plus the Lean `certior-flow-check` binary so the live verifier participates. The simplest way to obtain it is `certior-install-lean` (downloads + SHA-256-verifies a prebuilt binary into `~/.cache/certior/bin/`, which the runtime auto-discovers - no env var needed). Alternatively, build it from source and point `CERTIOR_FLOW_CHECK_BINARY` at the result, as shown below.
 
 ```bash
 export CERTIOR_KMS_ROOT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"

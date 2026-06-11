@@ -16,6 +16,15 @@ pip install certior
 
 Requires Python 3.11 or later. Pulls in `z3-solver`, `httpx`, `pydantic`, `jsonschema`, and `PyYAML`.
 
+Every tool call is enforced by Z3 against a policy model **proven sound in Lean 4 offline**. For *live* lattice-proven flow verification on every call, fetch the Lean binary on demand (not bundled in the wheel; ~90 MB, Linux x86_64 / macOS arm64):
+
+```bash
+pip install "certior[lean]"
+certior-install-lean   # downloads + SHA-256-verifies the binary, fails closed on mismatch
+```
+
+Without it the runtime stays on the always-on Z3 path.
+
 ## Quickstart
 
 ```python

@@ -21,6 +21,17 @@
 pip install certior
 ```
 
+This installs the full runtime: every tool call is enforced by Z3 against the policy model that is **proven sound in Lean 4 offline**, and each allowed call returns a certificate bound to that model's fingerprint.
+
+For *live* lattice-proven information-flow verification on every call, fetch the Lean `certior-flow-check` binary on demand (it is not bundled in the wheel; ~90 MB, Linux x86_64 / macOS arm64):
+
+```bash
+pip install "certior[lean]"
+certior-install-lean          # downloads + SHA-256-verifies the binary, fails closed on mismatch
+```
+
+Without it, the runtime stays on the always-on Z3 path. See [docs/lean-binary.md](docs/lean-binary.md).
+
 ## Quickstart
 
 ```python

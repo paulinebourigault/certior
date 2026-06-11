@@ -32,10 +32,29 @@ plus the cost of forcing every user - including those on Windows or
 macOS, who would not benefit from the Linux binary - to download a
 90+ MB Lean compiled artefact would more than double the wheel
 download for a feature most users do not need at first. The pip
-package stays a pure-Python ~410 KB wheel, and the binary is built
-once locally when (and only when) you want live Lean verification.
+package stays a pure-Python ~410 KB wheel, and the binary is fetched
+on demand when (and only when) you want live Lean verification.
 
-## Build
+## Install the prebuilt binary (recommended)
+
+`certior-install-lean` downloads the binary for your platform from the
+matching GitHub Release, verifies it against a SHA-256 baked into the
+pip package, and caches it where the runtime finds it automatically:
+
+```bash
+pip install "certior[lean]"   # installs the download client
+certior-install-lean          # download + verify + cache
+certior-install-lean --status # show install state, re-verify integrity
+```
+
+The download **fails closed**: if the binary's hash does not match the
+value shipped in the package, nothing is installed. Published platforms
+are Linux x86_64 and macOS arm64; on any other platform the command
+reports that no binary is available and the runtime stays on the
+always-on Z3 path. The cached binary lives under
+`~/.cache/certior/bin/` (override with `CERTIOR_CACHE_DIR`).
+
+## Build from source (alternative)
 
 Prerequisite: the [`elan`](https://github.com/leanprover/elan)
 toolchain manager. Install with:
@@ -83,15 +102,17 @@ loading.
 | `VerifyResult.certificate`    | Z3 cert only                         | Z3 cert + Lean cert                 |
 | Latency per `verify()`        | ~10-50 ms                            | ~50-150 ms                         |
 
-The runtime auto-detects the binary in three places, in priority
+The runtime auto-detects the binary in four places, in priority
 order:
 
 1. `CERTIOR_FLOW_CHECK_BINARY` environment variable (must be an
    absolute path to an existing file).
-2. The default Lake build output at
+2. The `certior-install-lean` cache (`~/.cache/certior/bin/`, or
+   `CERTIOR_CACHE_DIR`) - the path pip users get.
+3. The default Lake build output at
    `lean4/CertiorPlan/.lake/build/bin/certior-flow-check`, relative
-   to the installed `agentsafe/` package.
-3. `certior-flow-check` on the system `PATH`.
+   to the installed `agentsafe/` package (source checkouts).
+4. `certior-flow-check` on the system `PATH`.
 
 If none of those resolve, the runtime logs a one-time warning at
 startup and uses the Python subset check.
@@ -125,9 +146,14 @@ artefact:
 | macOS    | `certior-flow-check-macos-arm64`    |
 
 Artefacts are retained for 30 days and can be downloaded from the
-Actions tab of the GitHub repository (`gh run download <run-id>`),
-which is the fastest way to grab a prebuilt binary without installing
-the Lean toolchain locally.
+Actions tab of the GitHub repository (`gh run download <run-id>`).
+
+For released binaries, `.github/workflows/lean-binary-release.yml`
+runs on a `lean-binary-v*` tag: it rebuilds both platforms, publishes
+the binaries as **GitHub Release assets**, and regenerates the
+SHA-256 manifest (`certior/_lean_binary_manifest.py`) that the pip
+package ships. Those Release assets are exactly what
+`certior-install-lean` downloads and verifies.
 
 Windows is intentionally not yet on the matrix - Lean's Windows
 toolchain story still favours WSL, and no Windows runtime user has

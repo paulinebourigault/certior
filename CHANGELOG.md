@@ -4,6 +4,15 @@ All notable changes to Certior are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning is [Semantic Versioning](https://semver.org/spec/v2.0.0.html) once 1.0 ships; during the 0.x series, **minor version bumps may include breaking changes**.
 
+## [0.1.0a2] - 2026-06-11
+
+### Added
+- **Live Lean flow verification, opt-in via `certior-install-lean`.** `pip install certior` enforces every tool call with Z3 against the Lean-audited policy model (the model is proven offline; its fingerprint is bound into each certificate). For *runtime* lattice-proven information-flow checks, the `certior-flow-check` Lean binary (~90 MB, not bundled in the wheel) is now downloaded on demand: `certior-install-lean` fetches the binary for your platform from the matching GitHub Release, verifies it against a baked-in SHA-256 (fails closed on mismatch), and caches it where the runtime discovers it automatically. Linux x86_64 and macOS arm64 are published; other platforms continue on the Z3-only path. The `certior[lean]` extra installs the download client.
+- `certior-install-lean --status` reports the install state and re-verifies the cached binary's integrity; `--from-file` installs a locally-built binary for source checkouts.
+
+### Changed
+- The runtime's Lean binary discovery now also checks the `certior-install-lean` cache (resolution order: `CERTIOR_FLOW_CHECK_BINARY` -> install cache -> local `lake` build -> `PATH`).
+
 ## [0.1.0a1] - 2026-06-08
 
 Metadata-only release: deduped the redundant `Repository` / `Source Code` URLs in the PyPI project-links sidebar. No code or behaviour changes.
