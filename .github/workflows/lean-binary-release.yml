@@ -148,6 +148,9 @@ jobs:
             They are not bundled in the pip wheel (~90 MB each).
 
       - name: Open manifest-update PR
+        # The binaries are already published by this point; a PR hiccup
+        # (e.g. org PR-creation policy) must not fail the whole release.
+        continue-on-error: true
         if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
         uses: peter-evans/create-pull-request@v6
         with:
