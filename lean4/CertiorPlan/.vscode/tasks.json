@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Generate Certior PlanInfo (basic)",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "set -euo pipefail; cd \"${workspaceFolder}\"; mkdir -p .dap; lake exe plan-export --decl basic --out .dap/planInfo.generated.json"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Generate Certior PlanInfo (hipaa)",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "set -euo pipefail; cd \"${workspaceFolder}\"; mkdir -p .dap; lake exe plan-export --decl hipaa --out .dap/hipaa.planInfo.json"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Generate Certior PlanInfo (sox)",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "set -euo pipefail; cd \"${workspaceFolder}\"; mkdir -p .dap; lake exe plan-export --decl sox --out .dap/sox.planInfo.json"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Certior: Build All (lake build)",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "set -euo pipefail; cd \"${workspaceFolder}\"; lake build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Certior: Run Lean Tests",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "set -euo pipefail; cd \"${workspaceFolder}\"; lake exe plan-tests"
+      ],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

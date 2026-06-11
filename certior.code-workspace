@@ -1,0 +1,43 @@
+{
+  "folders": [
+    {
+      "name": "CertiorPlan (Lean4 Kernel)",
+      "path": "lean4/CertiorPlan"
+    },
+    {
+      "name": "CertiorLattice (Proven Lattice)",
+      "path": "lean4/CertiorLattice"
+    },
+    {
+      "name": "Certior (Python Agent)",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.lake": true,
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/*.egg-info": true,
+      ".venv": true,
+      ".workspace": true,
+      ".data": true
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder:Certior (Python Agent)}/.venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": ["tests"],
+    "lean4.lakeEnabled": true
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [],
+    "compounds": []
+  },
+  "extensions": {
+    "recommendations": [
+      "leanprover.lean4",
+      "ms-python.python",
+      "ms-python.vscode-pylance"
+    ]
+  }
+}

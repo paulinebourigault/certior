@@ -1,0 +1,54 @@
+# Controls what ships in the sdist (source tarball). The wheel uses
+# pyproject.toml's [tool.setuptools.packages.find]. This MANIFEST.in
+# mirrors that policy for the sdist.
+
+# Top-level project files
+include README.md
+include README-PYPI.md
+include LICENSE
+include CHANGELOG.md
+include SECURITY.md
+include pyproject.toml
+
+# Python packages
+recursive-include certior *.py *.pyi *.json *.schema.json py.typed
+recursive-include agentsafe *.py *.pyi *.json *.schema.json py.typed
+
+# Explicit excludes - defense in depth against accidentally shipping junk
+prune app
+prune apps
+prune certior-vscode
+prune certior-action
+prune lean4
+prune dafny
+prune docs
+prune tests
+prune skills
+prune examples
+prune .workspace
+prune .data
+prune .agentsafe
+prune .certior
+prune archive
+
+# Drop any leaked node_modules at any depth
+global-exclude */node_modules/*
+global-exclude node_modules
+global-exclude .next
+global-exclude .next-dev
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude *.pyo
+
+# Drop secrets and data
+global-exclude .env
+global-exclude .env.*
+global-exclude *.db
+global-exclude *.sqlite
+global-exclude *.sqlite3
+
+# Drop large binary assets that don't belong in a Python package
+global-exclude *.mp4
+global-exclude *.mov
+global-exclude *.zip
+global-exclude *.pdf

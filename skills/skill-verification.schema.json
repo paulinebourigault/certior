@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verified Skill Specification",
+  "description": "Schema for Certior verified skills - VERIFICATION.json",
+  "type": "object",
+  "required": ["skill_id", "version", "verification_requirements"],
+  "properties": {
+    "skill_id": {
+      "type": "string",
+      "pattern": "^[a-z_][a-z0-9_]*$",
+      "description": "Unique skill identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "author": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "verification_requirements": {
+      "type": "object",
+      "required": ["capabilities_required"],
+      "properties": {
+        "capabilities_required": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required capability tokens"
+        },
+        "resource_constraints": {
+          "type": "object",
+          "properties": {
+            "max_requests_per_minute": { "type": "integer", "minimum": 1 },
+            "max_body_size_bytes": { "type": "integer", "minimum": 0 },
+            "timeout_seconds": { "type": "integer", "minimum": 1 },
+            "max_memory_mb": { "type": "integer", "minimum": 1 },
+            "max_rows_per_query": { "type": "integer", "minimum": 1 },
+            "query_timeout_seconds": { "type": "integer", "minimum": 1 },
+            "max_file_size_bytes": { "type": "integer", "minimum": 0 },
+            "max_files_per_operation": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "safety_constraints": {
+          "type": "object",
+          "properties": {
+            "url_allowlist_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "url_blocklist_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "content_filters": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "user_agent_required": { "type": "boolean" },
+            "forbidden_columns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "allowed_tables": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "read_only": { "type": "boolean" },
+            "path_allowlist_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "path_blocklist_patterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "allowed_extensions": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "information_flow": {
+          "type": "object",
+          "properties": {
+            "input_labels": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "output_labels": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "forbidden_flows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["from", "to"],
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "formal_properties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["property", "prover"],
+            "properties": {
+              "property": { "type": "string" },
+              "prover": {
+                "type": "string",
+                "enum": ["z3", "dafny", "lean4"]
+              },
+              "specification": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "compliance_mappings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "applies": { "type": "boolean" },
+          "rationale": { "type": "string" }
+        }
+      }
+    }
+  }
+}

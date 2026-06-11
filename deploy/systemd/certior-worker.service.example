@@ -1,0 +1,24 @@
+[Unit]
+Description=Certior Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=certior
+Group=certior
+WorkingDirectory=/opt/certior
+EnvironmentFile=/etc/certior/certior.env
+ExecStart=/opt/certior/.venv/bin/celery -A agentsafe.cloud.redis_backend:get_celery_app worker --loglevel=info --concurrency=4
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/certior/.workspace /opt/certior/.data
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

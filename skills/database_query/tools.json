@@ -1,0 +1,42 @@
+{
+  "tools": [
+    {
+      "name": "execute_query",
+      "description": "Execute a read-only SQL SELECT query against the database",
+      "parameters": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "SQL SELECT query to execute"
+          },
+          "max_rows": {
+            "type": "integer",
+            "description": "Maximum rows to return (default: 1000, max: 10000)",
+            "default": 1000
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "description": "Query timeout in seconds (default: 30)",
+            "default": 30
+          }
+        }
+      }
+    },
+    {
+      "name": "list_tables",
+      "description": "List available database tables and their schemas",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "description": "Database schema to list (default: public)",
+            "default": "public"
+          }
+        }
+      }
+    }
+  ]
+}

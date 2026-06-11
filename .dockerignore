@@ -1,0 +1,23 @@
+# Certior .dockerignore
+.venv/
+.env
+.data/
+.workspace/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+htmlcov/
+*.egg-info/
+.git/
+.gitignore
+dafny/
+lean4/
+tests/
+examples/
+docs/
+demo/
+*.tar
+*.tar.gz
+*.md
+!README.md

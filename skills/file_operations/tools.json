@@ -1,0 +1,66 @@
+{
+  "tools": [
+    {
+      "name": "read_file",
+      "description": "Read the contents of a file from an allowed path",
+      "parameters": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the file to read"
+          },
+          "encoding": {
+            "type": "string",
+            "description": "File encoding (default: utf-8)",
+            "default": "utf-8"
+          }
+        }
+      }
+    },
+    {
+      "name": "write_file",
+      "description": "Write content to a file at an allowed path",
+      "parameters": {
+        "type": "object",
+        "required": ["path", "content"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to write the file"
+          },
+          "content": {
+            "type": "string",
+            "description": "Content to write"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Write mode: 'overwrite' or 'append'",
+            "enum": ["overwrite", "append"],
+            "default": "overwrite"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_directory",
+      "description": "List files in a directory",
+      "parameters": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Directory path to list"
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Glob pattern to filter results",
+            "default": "*"
+          }
+        }
+      }
+    }
+  ]
+}

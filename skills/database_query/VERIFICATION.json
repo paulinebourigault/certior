@@ -1,0 +1,73 @@
+{
+  "skill_id": "database_query",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "Database Query",
+    "description": "Execute read-only database queries with column restrictions",
+    "author": "Certior Team",
+    "tags": [
+      "database",
+      "sql",
+      "query"
+    ],
+    "risk_level": "high"
+  },
+  "verification_requirements": {
+    "capabilities_required": [
+      "database:read"
+    ],
+    "resource_constraints": {
+      "max_rows_per_query": 10000,
+      "query_timeout_seconds": 30
+    },
+    "safety_constraints": {
+      "forbidden_columns": [
+        "password",
+        "ssn",
+        "credit_card",
+        "secret_key"
+      ],
+      "allowed_tables": [
+        "public.*"
+      ],
+      "read_only": true
+    },
+    "information_flow": {
+      "input_labels": [
+        "internal"
+      ],
+      "output_labels": [
+        "internal",
+        "sensitive"
+      ],
+      "forbidden_flows": [
+        {
+          "from": "sensitive",
+          "to": "public"
+        }
+      ]
+    },
+    "formal_properties": [
+      {
+        "property": "no_forbidden_columns",
+        "prover": "z3",
+        "specification": "forall query: selected_columns(query) \u2229 forbidden_columns = \u2205"
+      },
+      {
+        "property": "row_limit_enforced",
+        "prover": "z3",
+        "specification": "forall query: result_count(query) <= max_rows_per_query"
+      }
+    ]
+  },
+  "compliance_mappings": {
+    "hipaa": {
+      "applies": true,
+      "rationale": "May access patient data"
+    },
+    "sox": {
+      "applies": true,
+      "rationale": "May access financial data"
+    }
+  }
+}

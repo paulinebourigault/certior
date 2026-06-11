@@ -1,0 +1,150 @@
+{
+  "name": "certior-plan-dap-client",
+  "displayName": "Certior Plan DAP - Verified Agent Debugger",
+  "description": "Debug verified agent plans with flow labels, proof certificates, and compliance inspection in VS Code.",
+  "version": "0.1.0",
+  "publisher": "certior",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/certior/certior-mvp.git"
+  },
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "activationEvents": [
+    "onDebug",
+    "onCommand:certiorPlan.startDebugging"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "certiorPlan.startDebugging",
+        "title": "Certior Plan: Start Debugging"
+      },
+      {
+        "command": "certiorPlan.showCertificates",
+        "title": "Certior Plan: Show Proof Certificates"
+      },
+      {
+        "command": "certiorPlan.showFlowGraph",
+        "title": "Certior Plan: Show Flow Graph"
+      },
+      {
+        "command": "certiorPlan.exportCompliance",
+        "title": "Certior Plan: Export Compliance Report"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "lean"
+      },
+      {
+        "language": "lean4"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "certior-plan-dap",
+        "label": "Certior Plan DAP",
+        "languages": [
+          "lean",
+          "lean4"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "request",
+              "type",
+              "name"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Path to the Lean source file containing the plan."
+              },
+              "planInfo": {
+                "type": "object",
+                "description": "PlanInfo JSON payload. Auto-loaded from .dap/planInfo.generated.json if absent."
+              },
+              "planInfoPath": {
+                "type": "string",
+                "description": "Path to a PlanInfo JSON file."
+              },
+              "certiorDapPath": {
+                "type": "string",
+                "description": "Path to the certior-dap executable. Defaults to .lake/build/bin/certior-dap."
+              },
+              "certiorDapArgs": {
+                "type": "array",
+                "description": "Optional command-line arguments for certior-dap.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": true,
+                "description": "Stop on the first plan step."
+              },
+              "compliancePolicy": {
+                "type": "string",
+                "default": "default",
+                "description": "Compliance policy: default, hipaa, sox, legal."
+              },
+              "capabilityTokens": {
+                "type": "array",
+                "description": "Capability tokens to grant to the plan.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "configurationSnippets": [
+          {
+            "label": "Certior Plan: Debug Current File",
+            "description": "Debug the verified agent plan in the active Lean file",
+            "body": {
+              "name": "Certior Plan DAP",
+              "type": "certior-plan-dap",
+              "request": "launch",
+              "source": "${file}",
+              "certiorDapPath": "${workspaceFolder}/.lake/build/bin/certior-dap",
+              "stopOnEntry": true,
+              "compliancePolicy": "default"
+            }
+          },
+          {
+            "label": "Certior Plan: HIPAA Debug",
+            "description": "Debug with HIPAA compliance policy",
+            "body": {
+              "name": "Certior HIPAA Debug",
+              "type": "certior-plan-dap",
+              "request": "launch",
+              "source": "${file}",
+              "certiorDapPath": "${workspaceFolder}/.lake/build/bin/certior-dap",
+              "stopOnEntry": true,
+              "compliancePolicy": "hipaa"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.88.0",
+    "typescript": "^5.4.2"
+  }
+}

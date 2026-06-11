@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 520" width="560" height="520" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif">
+  <!-- Background -->
+  <rect width="560" height="520" fill="#0d1117" rx="12"/>
+
+  <!-- Title -->
+  <text x="280" y="44" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="600" letter-spacing="0.5">Information Flow Control Lattice</text>
+  <text x="280" y="64" text-anchor="middle" fill="#8b949e" font-size="11">Certior enforces this mathematically. Competitors pattern-match strings.</text>
+
+  <!-- ── LEFT: THE LATTICE ── -->
+  <!-- Section label -->
+  <text x="148" y="94" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="600" letter-spacing="0.5">THE CERTIOR LATTICE</text>
+
+  <!-- TOP NODE: Sensitive -->
+  <rect x="96" y="108" width="104" height="44" rx="8" fill="#1a0e2e" stroke="#8957e5" stroke-width="2"/>
+  <text x="148" y="127" text-anchor="middle" fill="#bc8cff" font-size="11" font-weight="700">SENSITIVE</text>
+  <text x="148" y="143" text-anchor="middle" fill="#8957e5" font-size="10">PHI, PII, secrets</text>
+
+  <!-- Arrow Sensitive → Internal -->
+  <line x1="148" y1="152" x2="148" y2="196" stroke="#6e40c9" stroke-width="1.5"/>
+  <polygon points="148,196 143,186 153,186" fill="#6e40c9"/>
+  <!-- Arrow label -->
+  <text x="158" y="178" fill="#6e40c9" font-size="9">can flow down</text>
+
+  <!-- MIDDLE NODE: Internal -->
+  <rect x="96" y="196" width="104" height="44" rx="8" fill="#0e1f3d" stroke="#1f6feb" stroke-width="2"/>
+  <text x="148" y="215" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="700">INTERNAL</text>
+  <text x="148" y="231" text-anchor="middle" fill="#388bfd" font-size="10">business data</text>
+
+  <!-- Arrow Internal → Public -->
+  <line x1="148" y1="240" x2="148" y2="284" stroke="#1f6feb" stroke-width="1.5"/>
+  <polygon points="148,284 143,274 153,274" fill="#1f6feb"/>
+
+  <!-- BOTTOM NODE: Public -->
+  <rect x="96" y="284" width="104" height="44" rx="8" fill="#0f2a1e" stroke="#238636" stroke-width="2"/>
+  <text x="148" y="303" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="700">PUBLIC</text>
+  <text x="148" y="319" text-anchor="middle" fill="#238636" font-size="10">external outputs</text>
+
+  <!-- BLOCKED arrow: Public → Sensitive -->
+  <!-- curved path going left and up -->
+  <path d="M 96 306 Q 32 306 32 152 Q 32 130 96 130" fill="none" stroke="#f85149" stroke-width="2" stroke-dasharray="5,3"/>
+  <polygon points="96,130 84,124 84,136" fill="#f85149"/>
+  <rect x="0" y="195" width="62" height="26" rx="6" fill="#1a0e2e"/>
+  <text x="31" y="207" text-anchor="middle" fill="#f85149" font-size="10" font-weight="700">BLOCKED</text>
+  <text x="31" y="219" text-anchor="middle" fill="#f85149" font-size="9">by proof</text>
+
+  <!-- Divider -->
+  <line x1="270" y1="90" x2="270" y2="430" stroke="#21262d" stroke-width="1.5"/>
+
+  <!-- ── RIGHT: WHAT COMPETITORS DO ── -->
+  <text x="410" y="94" text-anchor="middle" fill="#f85149" font-size="11" font-weight="600" letter-spacing="0.5">WHAT COMPETITORS DO</text>
+
+  <!-- Competitor approach boxes -->
+  <!-- Box 1 -->
+  <rect x="295" y="108" width="230" height="64" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="310" y="128" fill="#8b949e" font-size="11" font-weight="600">Guardrails AI / LangSmith</text>
+  <text x="310" y="146" fill="#6e7681" font-size="10">if "patient" in output: block()</text>
+  <text x="310" y="162" fill="#6e7681" font-size="10">→ keyword matching, no formal model</text>
+
+  <!-- Box 2 -->
+  <rect x="295" y="186" width="230" height="64" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="310" y="206" fill="#8b949e" font-size="11" font-weight="600">Enkrypt AI</text>
+  <text x="310" y="224" fill="#6e7681" font-size="10">ML classifier: "is this sensitive?"</text>
+  <text x="310" y="240" fill="#6e7681" font-size="10">→ probabilistic, adversarially bypassable</text>
+
+  <!-- Box 3 -->
+  <rect x="295" y="264" width="230" height="64" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="310" y="284" fill="#8b949e" font-size="11" font-weight="600">DeepMind AlphaProof</text>
+  <text x="310" y="302" fill="#6e7681" font-size="10">Lean 4 for math olympiad proofs</text>
+  <text x="310" y="318" fill="#6e7681" font-size="10">→ not applied to runtime agent actions</text>
+
+  <!-- VS badge -->
+  <circle cx="270" cy="220" r="18" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="270" y="225" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="700">VS</text>
+
+  <!-- ── BOTTOM: THE CERTIOR CLAIM ── -->
+  <rect x="36" y="360" width="488" height="58" rx="10" fill="#0f2a1e" stroke="#238636" stroke-width="1.5"/>
+  <text x="280" y="383" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="700">Certior proves the flow is impossible - not improbable</text>
+  <text x="280" y="403" text-anchor="middle" fill="#8b949e" font-size="11">When Lean 4 says Sensitive cannot flow to Public, that is a</text>
+  <text x="280" y="417" text-anchor="middle" fill="#8b949e" font-size="11">machine-checked theorem. No jailbreak, no adversarial bypass.</text>
+
+  <!-- Footer -->
+  <text x="280" y="468" text-anchor="middle" fill="#484f58" font-size="10">Based on Bell-LaPadula / Denning 1976 - the mathematical foundation of classified system certification</text>
+  <text x="280" y="484" text-anchor="middle" fill="#484f58" font-size="10">Applied to AI agent runtime by Certior - first time in production</text>
+
+</svg>

@@ -1,0 +1,32 @@
+version: 1
+evidence_types:
+  - id: z3_proof_certificate
+    name: Z3 Proof Certificate
+    artifact_type: certificate
+    proof_system: z3
+    description: Execution-time certificate issued after Z3 constraint solving.
+  - id: signed_certificate
+    name: Signed Certificate Authority Output
+    artifact_type: certificate
+    proof_system: dafny
+    description: Certificate Authority output tied to the B2 model and signed validation path.
+  - id: lean_flow_certificate
+    name: Lean Flow Certificate
+    artifact_type: certificate
+    proof_system: lean
+    description: Live flow-check certificate produced by certior-flow-check.
+  - id: dafny_proof_certificate
+    name: Dafny Proof Certificate
+    artifact_type: certificate
+    proof_system: dafny
+    description: Runtime evidence emitted by a Dafny-backed Python bridge.
+  - id: seccomp_compliance_certificate
+    name: Seccomp Compliance Certificate
+    artifact_type: compliance_export
+    proof_system: dafny
+    description: Sandbox and seccomp compliance evidence attached to a runtime execution.
+  - id: workflow_release_binding
+    name: Workflow Release Binding Summary
+    artifact_type: workflow_evidence
+    proof_system: runtime
+    description: Reviewer and release linkage persisted across workflow stages.

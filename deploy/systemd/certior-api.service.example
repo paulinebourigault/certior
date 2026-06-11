@@ -1,0 +1,24 @@
+[Unit]
+Description=Certior API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=certior
+Group=certior
+WorkingDirectory=/opt/certior
+EnvironmentFile=/etc/certior/certior.env
+ExecStart=/opt/certior/.venv/bin/uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000 --log-level info
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/certior/.workspace /opt/certior/.data
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

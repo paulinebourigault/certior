@@ -1,0 +1,71 @@
+name: Integration tests (openclaw-sdk, Dockerised)
+
+# Runs the live OpenClaw adapter tests inside a hardened container so
+# that openclaw-sdk imports and runs in a sandbox with no host network
+# access, no privileged caps, and read-only mounts of the source tree.
+#
+# The integration test does not need to reach any OpenClaw service -
+# Agent._execute_impl is mocked. The Dockerised isolation is defense
+# in depth: if any imported third-party code tried unexpected egress,
+# the container would block it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'certior/**'
+      - 'agentsafe/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'docker/integration-test.Dockerfile'
+      - 'docker/integration-test.compose.yml'
+      - '.github/workflows/integration-test-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'certior/**'
+      - 'agentsafe/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'docker/integration-test.Dockerfile'
+      - 'docker/integration-test.compose.yml'
+      - '.github/workflows/integration-test-ci.yml'
+
+jobs:
+  integration:
+    name: Live openclaw-sdk integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build integration test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/integration-test.Dockerfile
+          tags: certior-integration-test:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run live adapter tests (sandboxed)
+        # Hard isolation flags match docker/integration-test.compose.yml
+        # so what runs in CI mirrors what runs locally.
+        run: |
+          docker run --rm \
+            --network=none \
+            --cap-drop=ALL \
+            --security-opt=no-new-privileges:true \
+            --read-only \
+            --tmpfs=/tmp \
+            --tmpfs=/work/.pytest_cache \
+            --tmpfs=/home/runner/.cache \
+            certior-integration-test:ci \
+            python -m pytest -v \
+              tests/test_adapters/test_openclaw.py \
+              tests/test_adapters/test_openclaw_live.py \
+              tests/test_adapters/test_openclaw_skill_loader.py

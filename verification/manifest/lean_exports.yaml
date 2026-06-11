@@ -1,0 +1,12 @@
+version: 1
+packages:
+  - package: CertiorLattice
+    root_module: Certior
+    workdir: lean4/CertiorLattice
+    command: [lake, exe, certior-lattice-graph-export]
+    runtime_critical: false
+  - package: CertiorPlan
+    root_module: CertiorPlan
+    workdir: lean4/CertiorPlan
+    command: [lake, exe, certior-plan-graph-export]
+    runtime_critical: true

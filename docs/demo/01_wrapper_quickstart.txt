@@ -1,0 +1,55 @@
+
+────────────────────────────────────────────────────────────────
+  1.  Allowed call - proceeds, returns a signed receipt
+────────────────────────────────────────────────────────────────
+  agent returned:  '<fetched https://example.com>'
+  audit entry:     tool=web_fetch  allowed=True  latency=9.04ms
+
+────────────────────────────────────────────────────────────────
+  2.  Verify directly - get the Verdict + the signed certificate
+────────────────────────────────────────────────────────────────
+  allowed:         True
+  reason:          (ok)
+  certificate id:  527a621b-0e6e-4f6f-8aed-…
+  theorem:         action_admissible:web_fetch
+  proof trace:     Z3 SAT in 1.0ms, policy: Lean-audited @ 4542ff75cfe3aec7
+  prover:          z3
+  signature valid: True  ← re-checked by the kernel
+
+────────────────────────────────────────────────────────────────
+  3.  Blocked call - over-budget action denied with a precise reason
+────────────────────────────────────────────────────────────────
+  CertiorBlocked raised: budget_exceeded: need 99999, have 4850
+  certificate issued?    None   ← None: we never sign what we don't prove
+
+────────────────────────────────────────────────────────────────
+  4.  Blocked call - capability the agent doesn't hold
+────────────────────────────────────────────────────────────────
+  allowed: False
+  reason:  missing_capability: database:admin
+  violation categories: ['capability']
+
+────────────────────────────────────────────────────────────────
+  5.  Tamper detection on the signed receipt
+────────────────────────────────────────────────────────────────
+  after tampering with theorem → signature valid: False  ← rejected
+  restored                      → signature valid: True
+
+────────────────────────────────────────────────────────────────
+  6.  Policy provenance - what's actually proven, in Lean
+────────────────────────────────────────────────────────────────
+  kernel:             Certior.Lattice + Delegation + Encoding + Composition (Lean 4)
+  fingerprint:        4542ff75cfe3aec7   ← embedded in every cert above
+  audited guarantees: 4 (delegationSafety, ifcSoundness, …)
+  trusted axioms:     ['propext', 'Classical.choice', 'Quot.sound']
+  re-audit yourself:  cd lean4/CertiorLattice && lake build Certior.Audit
+
+────────────────────────────────────────────────────────────────
+  Done.
+────────────────────────────────────────────────────────────────
+  • Every allowed action got a Z3 proof certificate.
+  • Each certificate is tied to a Lean-audited policy fingerprint.
+  • Blocked actions raised CertiorBlocked with a precise reason.
+  • Tampering with a certificate is detected by the kernel.
+  • Audit log has 4 entries; remaining budget: 4850¢.
+

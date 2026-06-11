@@ -1,0 +1,65 @@
+# Dockerignore specific to docker/integration-test.Dockerfile.
+# Takes precedence over the root .dockerignore for this build context
+# when BuildKit is enabled (docker buildx, GHA's docker/build-push-action).
+#
+# The integration test image needs:
+#   - certior/ and agentsafe/ source
+#   - tests/ (the test files themselves)
+#   - pyproject.toml + a few top-level files
+# It does NOT need:
+#   - .git/, .venv/, .data/, .workspace/, runtime data
+#   - lean4/, dafny/, docs/, examples/, demo/, certior-vscode/, etc.
+#   - node_modules, build artefacts, large binaries
+
+.git/
+.venv/
+.data/
+.workspace/
+.agentsafe/
+.certior/
+.pytest_cache/
+htmlcov/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.next/
+.next-dev/
+
+# Sub-projects and exploration directories not relevant to the
+# integration test
+lean4/
+dafny/
+docs/
+examples/
+demo/
+demo_recording/
+design_options/
+archive/
+capability-escape-room/
+certior-vscode/
+certior-action/
+github-action/
+apps/
+clients/
+packages/
+skills/
+
+# Large binary noise
+*.tar
+*.tar.gz
+*.zip
+*.mp4
+*.mov
+*.pdf
+*.gif
+
+# Secrets and data files
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+secrets/

@@ -1,0 +1,81 @@
+name: Build certior-flow-check (Lean live verifier)
+
+# Builds the Lean 4 binary that the runtime invokes for live flow
+# verification. Runs on every commit to ensure the README claim
+# "the binary can be built from source" remains verifiable.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lean4/CertiorPlan/**'
+      - 'lean4/CertiorLattice/**'
+      - 'scripts/build-lean-binary.sh'
+      - '.github/workflows/lean-binary-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lean4/CertiorPlan/**'
+      - 'lean4/CertiorLattice/**'
+      - 'scripts/build-lean-binary.sh'
+      - '.github/workflows/lean-binary-ci.yml'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artefact: certior-flow-check-linux-x86_64
+          - os: macos-latest
+            artefact: certior-flow-check-macos-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan (Lean 4 toolchain manager)
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Read Lean toolchain
+        id: toolchain
+        run: |
+          if [ -f lean4/CertiorPlan/lean-toolchain ]; then
+            echo "version=$(cat lean4/CertiorPlan/lean-toolchain)" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache Lake build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            lean4/CertiorPlan/.lake
+            lean4/CertiorLattice/.lake
+          key: lake-${{ runner.os }}-${{ steps.toolchain.outputs.version }}-${{ hashFiles('lean4/CertiorPlan/lakefile.lean', 'lean4/CertiorLattice/lakefile.lean') }}
+          restore-keys: |
+            lake-${{ runner.os }}-${{ steps.toolchain.outputs.version }}-
+            lake-${{ runner.os }}-
+
+      - name: Build certior-flow-check
+        run: bash scripts/build-lean-binary.sh
+
+      - name: Smoke-test the binary
+        run: |
+          BIN=lean4/CertiorPlan/.lake/build/bin/certior-flow-check
+          test -x "$BIN"
+          echo "binary size: $(du -h "$BIN" | cut -f1)"
+          file "$BIN"
+
+      - name: Upload binary as workflow artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artefact }}
+          path: lean4/CertiorPlan/.lake/build/bin/certior-flow-check
+          retention-days: 30
+          if-no-files-found: error

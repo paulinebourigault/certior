@@ -1,0 +1,20 @@
+name: 'Certior Policy Gatekeeper'
+description: 'Structurally blocks non-compliant AI agents at the PR level using Lean4 formal proofs and the Certior Graph.'
+author: 'Certior'
+
+inputs:
+  policy_packages:
+    description: 'Comma separated list of policy packages to check (e.g. "hipaa, owasp-top-10")'
+    required: true
+    default: 'hipaa'
+  repo_root:
+    description: 'The root directory of the repository to scan'
+    required: false
+    default: '.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.policy_packages }}
+    - ${{ inputs.repo_root }}

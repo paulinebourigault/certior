@@ -1,0 +1,33 @@
+# Local Docker Compose for running the Certior integration test suite.
+#
+# Usage:
+#   docker compose -f docker/integration-test.compose.yml run --rm integration
+#
+# Mounts the repo so iterating on tests does not require rebuilding the
+# image. The image already has openclaw-sdk installed; only test code
+# changes need to flow through.
+
+services:
+  integration:
+    build:
+      context: ..
+      dockerfile: docker/integration-test.Dockerfile
+    # Hard isolation: no privileged access, no host network.
+    # The integration test has no need to call out - _execute_impl is
+    # mocked, so no LLM, no OpenClaw gateway, no external endpoints.
+    network_mode: "none"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    # Volume mounts: source code (read-only), plus a writable tmpfs for
+    # pytest's cache and any temporary fixtures.
+    volumes:
+      - ../certior:/work/certior:ro
+      - ../agentsafe:/work/agentsafe:ro
+      - ../tests:/work/tests:ro
+    tmpfs:
+      - /tmp
+      - /work/.pytest_cache
+      - /home/runner/.cache

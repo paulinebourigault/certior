@@ -1,0 +1,79 @@
+{
+  "skill_id": "file_operations",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "File Operations",
+    "description": "Read and write files with path and size restrictions",
+    "author": "Certior Team",
+    "tags": [
+      "filesystem",
+      "files",
+      "io"
+    ],
+    "risk_level": "high"
+  },
+  "verification_requirements": {
+    "capabilities_required": [
+      "filesystem:read",
+      "filesystem:write"
+    ],
+    "resource_constraints": {
+      "max_file_size_bytes": 10000000,
+      "timeout_seconds": 60
+    },
+    "safety_constraints": {
+      "path_allowlist_patterns": [
+        "^/data/.*",
+        "^/tmp/.*",
+        "^\\./.*"
+      ],
+      "path_blocklist_patterns": [
+        ".*\\.env$",
+        ".*\\.key$",
+        ".*\\.pem$"
+      ],
+      "allowed_extensions": [
+        ".txt",
+        ".csv",
+        ".json",
+        ".md",
+        ".pdf"
+      ]
+    },
+    "information_flow": {
+      "input_labels": [
+        "internal"
+      ],
+      "output_labels": [
+        "internal"
+      ],
+      "forbidden_flows": [
+        {
+          "from": "sensitive",
+          "to": "public"
+        }
+      ]
+    },
+    "formal_properties": [
+      {
+        "property": "no_path_traversal",
+        "prover": "z3",
+        "specification": "forall path: not contains(path, '..') and path in allowlist"
+      },
+      {
+        "property": "size_limit_enforced",
+        "prover": "z3",
+        "specification": "forall file: size(file) <= max_file_size_bytes"
+      }
+    ]
+  },
+  "compliance_mappings": {
+    "hipaa": {
+      "applies": true,
+      "rationale": "May read/write PHI files"
+    },
+    "sox": {
+      "applies": false
+    }
+  }
+}

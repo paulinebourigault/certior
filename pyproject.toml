@@ -1,0 +1,144 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "certior"
+version = "0.1.0a1"
+description = "Verified safety layer for AI agent tool calls - capability, content, and budget gates with signed certificates and a Lean-checked policy model"
+readme = "README-PYPI.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Pauline Bourigault", email = "hello@certior.io"},
+]
+maintainers = [
+    {name = "Certior", email = "hello@certior.io"},
+]
+keywords = [
+    "ai-safety",
+    "ai-agents",
+    "agent-safety",
+    "llm-security",
+    "tool-calling",
+    "openai-tools",
+    "anthropic-tools",
+    "langchain",
+    "crewai",
+    "mcp",
+    "formal-verification",
+    "z3",
+    "lean4",
+    "policy-enforcement",
+    "compliance",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "z3-solver>=4.12.0",
+    "httpx>=0.26.0",
+    "pydantic>=2.5.0",
+    "jsonschema>=4.21.0",
+    "PyYAML>=6.0.2",
+]
+
+[project.optional-dependencies]
+# Framework adapters (pick the ones you use)
+langchain = ["langchain-core>=0.2.0"]
+crewai = ["crewai>=0.28.0"]
+openclaw = ["openclaw-sdk>=2.1.0"]
+
+# Server (for dashboard, API, compliance export)
+api = [
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "websockets>=12.0",
+    "PyJWT>=2.8.0",            # required by app/api/auth.py
+]
+postgres = ["asyncpg>=0.29.0"]
+redis = ["celery>=5.3.0", "redis>=5.0.0"]
+observability = [
+    "opentelemetry-api>=1.22.0",
+    "opentelemetry-sdk>=1.22.0",
+    "opentelemetry-exporter-otlp>=1.22.0",
+]
+ner = ["spacy>=3.7.0"]
+llm = ["anthropic>=0.39.0"]
+openai-llm = ["openai>=1.12.0"]
+pdf = ["reportlab>=4.0.0"]
+all = ["certior[api,postgres,redis,observability,llm,openai-llm,pdf]"]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+]
+
+[project.scripts]
+certior-graph = "agentsafe.verification_graph.cli:main"
+certior-graph-ingest = "agentsafe.verification_graph.cli:main_ingest"
+certior-doctor = "agentsafe.verification_graph.ops_cli:main_doctor"
+certior-runtime-evidence = "agentsafe.verification_graph.ops_cli:main_runtime_evidence"
+certior-skill-audit = "certior.adapters.openclaw_skill_audit_cli:main"
+
+[project.urls]
+Homepage = "https://certior.io"
+Documentation = "https://docs.certior.io"
+Repository = "https://github.com/paulinebourigault/certior"
+Issues = "https://github.com/paulinebourigault/certior/issues"
+Changelog = "https://github.com/paulinebourigault/certior/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["agentsafe", "agentsafe.*", "certior", "certior.*"]
+exclude = [
+    "tests*",
+    "dafny*",
+    "lean4*",
+    "skills*",
+    "app*",
+    "apps*",
+    "certior-vscode*",
+    "certior-action*",
+    "examples*",
+    "docs*",
+    "scripts*",
+    "packages*",
+    "clients*",
+    "archive*",
+    "design_options*",
+    "demo_recording*",
+    "capability-escape-room*",
+    "github-action*",
+    "*node_modules*",
+]
+
+[tool.setuptools.package-data]
+agentsafe = ["py.typed", "*.json", "*.schema.json", "**/*.json", "**/*.schema.json"]
+certior = ["py.typed", "*.json", "*.schema.json"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+]

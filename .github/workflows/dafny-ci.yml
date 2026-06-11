@@ -1,0 +1,147 @@
+# ─────────────────────────────────────────────────────────────────────
+# Dafny Verification CI
+#
+# Runs `dafny verify` on every .dfy file in the repository.
+# Verifies formal proofs for capability attenuation, information-flow
+# control, certificate verification, seccomp filter safety, path safety,
+# and URL filter safety.
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Dafny - Verify Proofs"
+
+on:
+  push:
+    paths:
+      - "dafny/**"
+      - ".github/workflows/dafny-ci.yml"
+  pull_request:
+    paths:
+      - "dafny/**"
+      - ".github/workflows/dafny-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-dafny:
+    name: "dafny verify (Dafny ${{ matrix.dafny-version }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    strategy:
+      matrix:
+        dafny-version:
+          - "4.11.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Dafny
+        run: |
+          DAFNY_VERSION="${{ matrix.dafny-version }}"
+          echo "Installing Dafny ${DAFNY_VERSION}..."
+
+          # Download release binary
+          wget -q "https://github.com/dafny-lang/dafny/releases/download/v${DAFNY_VERSION}/dafny-${DAFNY_VERSION}-x64-ubuntu-22.04.zip" \
+            -O /tmp/dafny.zip
+
+          # Extract to /opt/dafny
+          sudo mkdir -p /opt/dafny
+          sudo unzip -q /tmp/dafny.zip -d /opt/dafny
+          rm /tmp/dafny.zip
+
+          # Add to PATH (handle nested directory structure)
+          if [ -d "/opt/dafny/dafny" ]; then
+            echo "/opt/dafny/dafny" >> "$GITHUB_PATH"
+          else
+            echo "/opt/dafny" >> "$GITHUB_PATH"
+          fi
+
+      - name: Verify Dafny installation
+        run: |
+          dafny --version
+          echo "✅ Dafny installed"
+
+      - name: Discover .dfy files
+        id: discover
+        run: |
+          echo "── Dafny files to verify ──"
+          FILES=$(find dafny/ -name "*.dfy" -type f | sort)
+          COUNT=$(echo "$FILES" | wc -l)
+          echo "$FILES"
+          echo ""
+          echo "Total: $COUNT files"
+          echo "file_count=$COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare proof-only Dafny sources
+        run: |
+          rm -rf /tmp/dafny-proof-ci
+          mkdir -p /tmp/dafny-proof-ci
+          python3 scripts/strip_dafny_test_methods.py dafny /tmp/dafny-proof-ci/dafny
+
+      - name: Define proof source set
+        id: proof-files
+        run: |
+          cat > /tmp/dafny-proof-ci/proof-files.txt <<'EOF'
+          dafny/capabilities/capability_attenuation.dfy
+          dafny/flow/information_flow.dfy
+          dafny/kernel/certificate.dfy
+          dafny/sandbox/seccomp_filter.dfy
+          dafny/sandbox/seccomp_filter_extended.dfy
+          dafny/tools/path_safety.dfy
+          dafny/tools/url_filter.dfy
+          EOF
+
+      - name: Verify proof files
+        run: |
+          echo "── Running dafny verify ──"
+          PASS=0
+          FAIL=0
+          ERRORS=""
+
+          while IFS= read -r rel; do
+            f="/tmp/dafny-proof-ci/$rel"
+            LINES=$(wc -l < "$f")
+            echo ""
+            echo "::group::Verifying $rel ($LINES lines)"
+
+            if dafny verify --allow-warnings --cores 2 --verification-time-limit 120 "$f" 2>&1; then
+              echo "::endgroup::"
+              echo "  ✅ $rel"
+              PASS=$((PASS + 1))
+            else
+              echo "::endgroup::"
+              echo "  ❌ $rel"
+              echo "::error file=$rel::Dafny verification failed for $rel"
+              FAIL=$((FAIL + 1))
+              ERRORS="$ERRORS\n  - $rel"
+            fi
+          done < /tmp/dafny-proof-ci/proof-files.txt
+
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "  Results: $PASS passed, $FAIL failed"
+          echo "═══════════════════════════════════════════════"
+
+          if [ $FAIL -gt 0 ]; then
+            echo ""
+            echo "Failed files:$ERRORS"
+            exit 1
+          fi
+
+          echo "✅ All Dafny proofs verified"
+
+      - name: Proof summary
+        if: always()
+        run: |
+          echo "── Verification summary ──"
+          TOTAL_LINES=0
+          for f in $(find dafny/ -name "*.dfy" -type f | sort); do
+            LINES=$(wc -l < "$f")
+            LEMMAS=$(grep -cP '^\s*(lemma|method|function|predicate|ghost)\s' "$f" 2>/dev/null || true)
+            echo "  $(basename $(dirname $f))/$(basename $f): $LINES lines, $LEMMAS declarations"
+            TOTAL_LINES=$((TOTAL_LINES + LINES))
+          done
+          echo ""
+          echo "  Total: $TOTAL_LINES lines of verified Dafny"

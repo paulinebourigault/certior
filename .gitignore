@@ -1,0 +1,102 @@
+# Certior .gitignore
+.certior/
+.venv/
+.env
+.env.*
+!.env.example
+!.env.production.example
+.data/
+.workspace/
+
+# Next.js build output (production AND dev-mode caches)
+.next/
+.next-dev/
+**/.next/
+**/.next-dev/
+
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Backup / scratch files (never belong in source control)
+*.bak
+*.backup
+*.orig
+
+htmlcov/
+*.db
+*.db-wal
+*.db-shm
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+**/node_modules/
+lean4/**/.lake/
+lean4/**/.dap/
+
+# Pitch decks, recordings, internal planning - keep on disk, never in git
+docs/*pitch*
+docs/*deck*
+docs/*recording*
+docs/*backlog*
+docs/*speaker-notes*
+docs/*implementation-plan*
+docs/release-decision-model.md
+docs/pitch_deck.md
+docs/CX_*
+
+# Private working material - architecture roadmaps, planning notes, anything
+# that should stay on disk but never reach the public repo. Drop new files
+# here rather than at the docs/ root so the boundary is unambiguous.
+docs/_private/
+
+# Editor / IDE
+.idea/
+*.swp
+*.swo
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Runtime data and logs
+.agentsafe/
+logs/
+
+# Throwaway patch / fix scripts (one-off file mutators, never ship)
+**/patch_*.py
+**/fix_api*.py
+**/fix_api_*.py
+lean4/CertiorPlan/update_styles.py
+
+# Separate sub-projects (kept in their own repos)
+apps/
+archive/
+capability-escape-room/
+certior-action/
+certior-vscode/
+clients/
+demo_recording/
+design_options/
+github-action/
+packages/boxclaw/
+packages/certior-compiler/
+packages/certior-core/
+
+# Internal sprint notes
+docs/sprint*_summary.md
+
+# Large binary assets - track via Git LFS if needed, not via git directly
+lean4/CertiorPlan/verification-explorer.gif
+*.gif
+!docs/assets/*.gif

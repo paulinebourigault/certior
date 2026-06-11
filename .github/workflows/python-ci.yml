@@ -1,0 +1,156 @@
+# ─────────────────────────────────────────────────────────────────────
+# Python CI - Tests, Coverage, Lint
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Python - Tests"
+
+on:
+  push:
+    paths:
+      - "agentsafe/**"
+      - "app/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/python-ci.yml"
+  pull_request:
+    paths:
+      - "agentsafe/**"
+      - "app/**"
+      - "tests/**"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: "pytest (Python ${{ matrix.python-version }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[all,dev]"
+
+      - name: Run tests
+        # Unit + SDK + app-with-mocks. The postgres-driven tests are
+        # excluded here because they are covered by the dedicated
+        # test-postgres job (which has the postgres service container).
+        # test_integration_full.py + test_multi_provider.py are excluded
+        # from this suite because their use of a shared PgStateStore pool
+        # is not isolated between tests.
+        run: |
+          pytest tests/ \
+            --tb=short \
+            --cov=agentsafe --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --ignore=tests/test_integration_full.py \
+            --ignore=tests/test_multi_provider.py \
+            --ignore=tests/test_verification_graph/test_runtime_postgres.py \
+            -q
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 14
+
+  # ── PostgreSQL integration tests ─────────────────────────────
+  test-postgres:
+    name: "PostgreSQL integration"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: certior
+          POSTGRES_PASSWORD: certior
+          POSTGRES_DB: certior_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U certior"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[all,dev]"
+
+      - name: Build editable console scripts
+        run: pip install -e .
+
+      - name: Run Certior doctor
+        env:
+          DATABASE_URL: postgresql://certior:certior@localhost:5432/certior_test
+          OPENAI_API_KEY: ci-placeholder-key
+          CERTIOR_LLM_PROVIDER: openai
+        run: |
+          certior-doctor
+
+      - name: Run PostgreSQL tests
+        env:
+          DATABASE_URL: postgresql://certior:certior@localhost:5432/certior_test
+        run: |
+          pytest tests/test_cloud/test_postgres_backend.py \
+                 tests/test_verification_graph/test_runtime_postgres.py \
+                 -v --tb=short
+
+  # ── Redis integration tests ──────────────────────────────────
+  test-redis:
+    name: "Redis integration"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[all,dev]"
+
+      - name: Run Redis tests
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/test_cloud/test_redis_backend.py -v --tb=short

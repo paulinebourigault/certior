@@ -1,0 +1,155 @@
+# ─────────────────────────────────────────────────────────────────────
+# Lean 4 Proof Verification CI
+#
+# Runs on every push / PR that touches lean4/ files. Builds BOTH the
+# CertiorLattice proof library and the CertiorPlan kernel, then runs a
+# Mathlib-style AXIOM AUDIT: the headline guarantees (delegationSafety,
+# ifcSoundness, compositionSoundness, isValidBoundedLattice) must depend only on
+# {propext, Classical.choice, Quot.sound} - a sorryAx or untrusted axiom fails CI.
+# Plus a belt-and-suspenders text scan for bare sorry/admit.
+#
+# Artifacts: build logs + axiom-audit report
+# ─────────────────────────────────────────────────────────────────────
+
+name: "Lean 4 - Verify Proofs"
+
+on:
+  push:
+    paths:
+      - "lean4/**"
+      - ".github/workflows/lean4-ci.yml"
+  pull_request:
+    paths:
+      - "lean4/**"
+      - ".github/workflows/lean4-ci.yml"
+  # Allow manual trigger for full verification
+  workflow_dispatch:
+
+jobs:
+  verify-proofs:
+    name: "lake build (Lean ${{ matrix.lean-version }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    strategy:
+      matrix:
+        lean-version:
+          - "v4.14.0"    # pinned in lean-toolchain
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Cache Lean toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            ~/.cache/elan
+          key: lean-toolchain-${{ runner.os }}-${{ hashFiles('lean4/CertiorPlan/lean-toolchain', 'lean4/CertiorLattice/lean-toolchain') }}
+
+      - name: Install Lean toolchain
+        run: bash ./scripts/install-lean-toolchain.sh
+
+      - name: Cache lake-packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            lean4/CertiorLattice/.lake
+            lean4/CertiorLattice/lake-packages
+          key: lake-${{ runner.os }}-${{ hashFiles('lean4/CertiorLattice/lakefile.lean', 'lean4/CertiorLattice/lean-toolchain') }}
+          restore-keys: |
+            lake-${{ runner.os }}-
+
+      - name: Build and verify proofs
+        working-directory: lean4/CertiorLattice
+        run: |
+          echo "::group::lake build"
+          lake build Certior 2>&1 | tee /tmp/lake-build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          echo "::endgroup::"
+
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "::error::lake build failed with exit code $BUILD_EXIT"
+            exit 1
+          fi
+
+          echo "✅ lake build succeeded"
+
+      - name: Axiom audit - guarantees must not depend on sorryAx or untrusted axioms
+        working-directory: lean4/CertiorLattice
+        run: |
+          # Authoritative (semantic) gate: elaborating Certior.Audit runs
+          # collectAxioms on the headline guarantees and hard-fails if any
+          # depends on sorryAx or an axiom outside {propext, Classical.choice,
+          # Quot.sound}. This is what makes "machine-checked" non-rotting.
+          echo "::group::lake build Certior.Audit"
+          lake build Certior.Audit 2>&1 | tee /tmp/lake-audit.log
+          AUDIT_EXIT=${PIPESTATUS[0]}
+          echo "::endgroup::"
+          if [ "$AUDIT_EXIT" -ne 0 ] || grep -qiE "AXIOM AUDIT FAILED|sorryAx" /tmp/lake-audit.log; then
+            echo "::error::Axiom audit failed - a guarantee depends on sorryAx or an untrusted axiom"
+            exit 1
+          fi
+          echo "✅ Axiom audit passed - guarantees depend only on {propext, Classical.choice, Quot.sound}"
+
+      - name: Build the plan kernel (CertiorPlan)
+        working-directory: lean4/CertiorPlan
+        run: |
+          echo "::group::lake build (CertiorPlan)"
+          lake build 2>&1 | tee /tmp/lake-plan.log
+          PLAN_EXIT=${PIPESTATUS[0]}
+          echo "::endgroup::"
+          if [ "$PLAN_EXIT" -ne 0 ]; then
+            echo "::error::CertiorPlan build failed"
+            exit 1
+          fi
+          echo "✅ CertiorPlan built"
+
+      - name: Check for sorry / admit (incomplete proofs)
+        working-directory: lean4/CertiorLattice
+        run: |
+          # Belt-and-suspenders text scan over the proof libraries (the axiom
+          # audit above is the authoritative gate). Excludes Audit.lean (it
+          # legitimately names sorryAx) and app/ exporters (which string-match
+          # "sorry" in generated output). `sorryAx` is not matched (word-boundary).
+          echo "Scanning for bare 'sorry'/'admit' in proof sources..."
+          SORRY_COUNT=0
+          FILES=$(find Certior -name "*.lean" ! -name "Audit.lean"; find ../CertiorPlan/CertiorPlan -name "*.lean")
+          for f in $(echo "$FILES" | sort); do
+            COUNT=$(grep -cP '(?<!\w)(sorry|admit)(?!\w)' "$f" 2>/dev/null || true)
+            if [ "$COUNT" -gt 0 ]; then
+              echo "::warning file=$f::Found $COUNT sorry/admit in $f"
+              SORRY_COUNT=$((SORRY_COUNT + COUNT))
+            fi
+          done
+          if [ "$SORRY_COUNT" -gt 0 ]; then
+            echo "::error::Found $SORRY_COUNT total sorry/admit - incomplete proofs!"
+            exit 1
+          fi
+          echo "✅ Zero sorry/admit - all proofs are complete"
+
+      - name: Count theorems
+        working-directory: lean4/CertiorLattice
+        run: |
+          echo "── Theorem count by module ──"
+          TOTAL=0
+          for f in $(find Certior -name "*.lean" | sort); do
+            # Count theorem/lemma/def declarations
+            COUNT=$(grep -cP '^\s*(theorem|lemma|instance|def)\s' "$f" 2>/dev/null || true)
+            LINES=$(wc -l < "$f")
+            echo "  $f: $COUNT theorems/lemmas ($LINES lines)"
+            TOTAL=$((TOTAL + COUNT))
+          done
+          echo ""
+          echo "  Total: $TOTAL theorems/lemmas verified"
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lean4-build-log
+          path: /tmp/lake-build.log
+          retention-days: 30

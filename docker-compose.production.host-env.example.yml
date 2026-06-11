@@ -1,0 +1,32 @@
+services:
+  api:
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?set OPENAI_API_KEY in the host environment or secret store}
+      CERTIOR_LLM_PROVIDER: ${CERTIOR_LLM_PROVIDER:-openai}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the host environment or secret store}
+      REDIS_URL: ${REDIS_URL:?set REDIS_URL in the host environment or secret store}
+      CERTIOR_KMS_ROOT_SECRET: ${CERTIOR_KMS_ROOT_SECRET:?set CERTIOR_KMS_ROOT_SECRET; generate with "python -c 'import secrets; print(secrets.token_urlsafe(32))'"}
+      CERTIOR_API_KEYS_JSON: ${CERTIOR_API_KEYS_JSON:?set CERTIOR_API_KEYS_JSON as a JSON object mapping API key to client label}
+      CERTIOR_ENV: production
+      CERTIOR_HOST: 0.0.0.0
+      CERTIOR_PORT: 8000
+      CERTIOR_FLOW_CHECK_BINARY: ${CERTIOR_FLOW_CHECK_BINARY:?set CERTIOR_FLOW_CHECK_BINARY in the host environment}
+
+  worker:
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?set OPENAI_API_KEY in the host environment or secret store}
+      CERTIOR_LLM_PROVIDER: ${CERTIOR_LLM_PROVIDER:-openai}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the host environment or secret store}
+      REDIS_URL: ${REDIS_URL:?set REDIS_URL in the host environment or secret store}
+      CERTIOR_KMS_ROOT_SECRET: ${CERTIOR_KMS_ROOT_SECRET:?set CERTIOR_KMS_ROOT_SECRET}
+      CERTIOR_API_KEYS_JSON: ${CERTIOR_API_KEYS_JSON:?set CERTIOR_API_KEYS_JSON}
+
+# Usage:
+#   export OPENAI_API_KEY='sk-...'
+#   export CERTIOR_LLM_PROVIDER='openai'
+#   export DATABASE_URL='postgresql://certior_app:...@db.example.com:5432/certior?sslmode=require&application_name=certior-api'
+#   export REDIS_URL='redis://redis.example.com:6379/0'
+#   export CERTIOR_KMS_ROOT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+#   export CERTIOR_API_KEYS_JSON='{"ck-prod-...": "orchestrator-a"}'
+#   export CERTIOR_FLOW_CHECK_BINARY='/opt/certior/lean4/CertiorPlan/.lake/build/bin/certior-flow-check'
+#   docker compose -f docker-compose.yml -f docker-compose.production.host-env.example.yml up -d --build api worker

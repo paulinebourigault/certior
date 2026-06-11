@@ -1,0 +1,138 @@
+# ─────────────────────────────────────────────────────────────────────
+# Certior - Docker Compose
+#
+# Usage:
+#   docker compose up --build                          # API + PG + Redis
+#   docker compose --profile observability up --build  # + Jaeger/Prometheus/Grafana
+#
+# Set provider keys in .env or pass them from your shell / orchestrator:
+#   OPENAI_API_KEY=sk-... CERTIOR_LLM_PROVIDER=openai docker compose up --build
+#   ANTHROPIC_API_KEY=sk-ant-... docker compose up --build
+# ─────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Core: API server ──────────────────────────────────────────
+  api:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CERTIOR_LLM_PROVIDER=${CERTIOR_LLM_PROVIDER:-}
+      - CERTIOR_ENV=production
+      - CERTIOR_HOST=0.0.0.0
+      - CERTIOR_PORT=8000
+      - CERTIOR_WORKSPACE=/workspace
+      - DATABASE_URL=postgresql://certior:certior@postgres:5432/certior
+      - REDIS_URL=redis://redis:6379/0
+      # Uncomment for observability profile:
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    ports:
+      - "${CERTIOR_PORT:-8000}:8000"
+    volumes:
+      - certior_workspace:/workspace
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ── Celery worker (processes background tasks) ────────────────
+  worker:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://certior:certior@postgres:5432/certior
+      - REDIS_URL=redis://redis:6379/0
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CERTIOR_LLM_PROVIDER=${CERTIOR_LLM_PROVIDER:-}
+    command: >
+      celery -A agentsafe.cloud.redis_backend:get_celery_app
+      worker --loglevel=info --concurrency=4
+    restart: unless-stopped
+
+  # ── PostgreSQL (state + event persistence) ────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: certior
+      POSTGRES_PASSWORD: certior
+      POSTGRES_DB: certior
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U certior"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Redis (Celery broker + result backend) ────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Optional: Jaeger (distributed tracing) ────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    profiles: ["observability"]
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    restart: unless-stopped
+
+  # ── Optional: Prometheus (metrics) ────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    profiles: ["observability"]
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  # ── Optional: Grafana (dashboards) ────────────────────────────
+  grafana:
+    image: grafana/grafana:10.3.1
+    profiles: ["observability"]
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=certior
+      - GF_SECURITY_ADMIN_USER=admin
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  redis_data:
+  certior_workspace:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,7 @@
+# Netlify redirect rules for certior.io
+#
+# Docs are hosted at the docs.certior.io subdomain (Mintlify).
+# Any legacy /docs/* link on the main site is permanently redirected
+# to the canonical subdomain so shared links keep working.
+/docs           https://docs.certior.io                  301
+/docs/*         https://docs.certior.io/:splat           301

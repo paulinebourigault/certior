@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Certior: Basic Plan (auto-export)",
+      "type": "certior-plan-dap",
+      "request": "launch",
+      "source": "${file}",
+      "stopOnEntry": true,
+      "preLaunchTask": "Generate Certior PlanInfo (basic)"
+    },
+    {
+      "name": "Certior: HIPAA Plan (flow violation demo)",
+      "type": "certior-plan-dap",
+      "request": "launch",
+      "source": "${file}",
+      "stopOnEntry": true,
+      "planInfoPath": "${workspaceFolder}/.dap/hipaa.planInfo.json"
+    },
+    {
+      "name": "Certior: SOX Plan (approval halt demo)",
+      "type": "certior-plan-dap",
+      "request": "launch",
+      "source": "${file}",
+      "stopOnEntry": true,
+      "planInfoPath": "${workspaceFolder}/.dap/sox.planInfo.json"
+    },
+    {
+      "name": "Certior: Current Plan (generated fallback)",
+      "type": "certior-plan-dap",
+      "request": "launch",
+      "source": "${file}",
+      "stopOnEntry": true
+    }
+  ]
+}

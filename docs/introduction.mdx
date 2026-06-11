@@ -1,0 +1,43 @@
+---
+title: "Certior"
+description: "A capability boundary for multi-agent AI - every tool call is checked against a Lean-proven policy before it runs."
+---
+
+## What Certior is
+
+Certior is a Python SDK that wraps any tool-using agent - OpenAI, LangChain, CrewAI, OpenClaw, or a custom loop - in a verified capability boundary. Three gates run before every tool call:
+
+- **Capability** - does the agent hold the permissions this tool needs? A child agent's capabilities must always be a subset of its parent's.
+- **Content** - does the payload satisfy the active compliance policy (HIPAA / SOX / attorney-client / default)?
+- **Budget** - is there enough budget left for this call?
+
+Allowed calls return a signed certificate. Blocked calls raise `CertiorBlocked` with a precise reason and never reach your tool executor.
+
+## What is proven
+
+The policy model the gate enforces is machine-checked in Lean 4: 155 theorems and lemmas, 0 `sorry`, 0 axioms beyond Lean's three standard ones (`propext`, `Classical.choice`, `Quot.sound`). CI fails the build if any of the four headline guarantees - `delegationSafety`, `ifcSoundness`, `compositionSoundness`, and `SecurityLevel.isValidBoundedLattice` - stops depending only on standard axioms.
+
+What Certior does not claim: it does not verify the LLM's behaviour. It verifies the boundary the LLM operates inside.
+
+## Where to start
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install Certior, create a Guard, watch an allowed call return a signed receipt and a blocked call raise CertiorBlocked - five minutes.
+  </Card>
+  <Card title="OpenAI tool calling" icon="bolt" href="/guides/openai">
+    Drop verify_tool_calls() onto an OpenAI tool-calling response with no SDK migration.
+  </Card>
+  <Card title="How it works" icon="diagram-project" href="/concepts/how-it-works">
+    The three-gate pipeline, the Z3 runtime, and the Lean policy model in one page.
+  </Card>
+  <Card title="Source on GitHub" icon="github" href="https://github.com/paulinebourigault/certior">
+    Apache-2.0 licensed. SDK, FastAPI server, Studio frontend, Lean kernel.
+  </Card>
+</CardGroup>
+
+## Status
+
+Alpha release. Public API may change between minor versions during the 0.x line. Pin to `certior==0.1.*` for compatible updates.
+
+Looking for design partners in healthcare, finance, legal, and regulated AI teams that need real audit trails on agent workflows. Email [hello@certior.io](mailto:hello@certior.io).

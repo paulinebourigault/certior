@@ -1,0 +1,173 @@
+version: 1
+components:
+  - id: capability_attenuation_bridge
+    display_name: Capability Attenuation Bridge
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/capabilities/capability_attenuation_verified.py
+    module: agentsafe.capabilities.capability_attenuation_verified
+    phase: B1
+    proof_family: capability_attenuation
+    bounded_calls:
+      - agentsafe.kernel.certificate
+    tests:
+      - tests/test_b1_capability_attenuation.py
+  - id: certificate_authority_bridge
+    display_name: CertificateAuthority
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/kernel/certificate.py
+    module: agentsafe.kernel.certificate
+    phase: B2
+    proof_family: certificate_authority
+    bounded_calls:
+      - certior.guard
+      - agentsafe.runtime_policy
+    tests:
+      - tests/test_agents/test_certificate_validation.py
+  - id: information_flow_bridge
+    display_name: Information Flow Bridge
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/flow/information_flow.py
+    module: agentsafe.flow.information_flow
+    phase: B3
+    proof_family: information_flow
+    bounded_calls:
+      - agentsafe.verification.lean_bridge
+      - agentsafe.flow.policy_enforcer
+    tests:
+      - tests/test_b3_information_flow.py
+      - tests/test_z3_optimizer.py
+  - id: url_filter_bridge
+    display_name: URL Filter Bridge
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/tools/url_filter_verified.py
+    module: agentsafe.tools.url_filter_verified
+    phase: B4
+    proof_family: url_filter
+    bounded_calls:
+      - certior.guard
+      - agentsafe.runtime_policy
+    tests:
+      - tests/test_b4_url_filter.py
+  - id: path_safety_bridge
+    display_name: Path Safety Bridge
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/tools/path_safety_verified.py
+    module: agentsafe.tools.path_safety_verified
+    phase: B5
+    proof_family: path_safety
+    bounded_calls:
+      - certior.guard
+      - agentsafe.runtime_policy
+    tests:
+      - tests/test_b5_path_safety.py
+  - id: seccomp_verified_bridge
+    display_name: Seccomp Verified Bridge
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/sandbox/seccomp_verified.py
+    module: agentsafe.sandbox.seccomp_verified
+    phase: D4
+    proof_family: seccomp
+    bounded_calls:
+      - agentsafe.sandbox.seccomp_policy
+      - agentsafe.sandbox.seccomp_dafny_bridge
+      - agentsafe.sandbox.seccomp_deploy
+    tests:
+      - tests/test_d4_production.py
+  - id: seccomp_dafny_bridge
+    display_name: Seccomp Dafny Alignment Bridge
+    kind: python_bridge
+    language: python
+    source_path: agentsafe/sandbox/seccomp_dafny_bridge.py
+    module: agentsafe.sandbox.seccomp_dafny_bridge
+    phase: D4
+    proof_family: seccomp
+    bounded_calls:
+      - agentsafe.sandbox.seccomp_filter_cache
+      - agentsafe.sandbox.seccomp_policy
+    tests:
+      - tests/test_d4_production.py
+  - id: capability_attenuation_model
+    display_name: Capability Attenuation Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/capabilities/capability_attenuation.dfy
+    phase: B1
+    proof_family: capability_attenuation
+  - id: certificate_model
+    display_name: Certificate Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/kernel/certificate.dfy
+    phase: B2
+    proof_family: certificate_authority
+  - id: information_flow_model
+    display_name: Information Flow Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/flow/information_flow.dfy
+    phase: B3
+    proof_family: information_flow
+  - id: url_filter_model
+    display_name: URL Filter Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/tools/url_filter.dfy
+    phase: B4
+    proof_family: url_filter
+  - id: path_safety_model
+    display_name: Path Safety Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/tools/path_safety.dfy
+    phase: B5
+    proof_family: path_safety
+  - id: seccomp_filter_model
+    display_name: Seccomp Base Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/sandbox/seccomp_filter.dfy
+    phase: D4
+    proof_family: seccomp
+  - id: seccomp_filter_extended_model
+    display_name: Seccomp Extended Dafny Model
+    kind: dafny_model
+    language: dafny
+    source_path: dafny/sandbox/seccomp_filter_extended.dfy
+    phase: D4
+    proof_family: seccomp
+  - id: certior_lattice_package
+    display_name: CertiorLattice
+    kind: lean_package
+    language: lean
+    source_path: lean4/CertiorLattice
+    phase: C
+    proof_family: lattice
+  - id: certior_plan_package
+    display_name: CertiorPlan
+    kind: lean_package
+    language: lean
+    source_path: lean4/CertiorPlan
+    phase: B1
+    proof_family: plan_kernel
+    runtime_critical: true
+  - id: certior_flow_check_binary
+    display_name: certior-flow-check
+    kind: lean_binary
+    language: lean
+    source_path: lean4/CertiorPlan/app/FlowCheck.lean
+    phase: B1
+    proof_family: flow_check
+    runtime_critical: true
+  - id: certior_dap_binary
+    display_name: certior-dap
+    kind: lean_binary
+    language: lean
+    source_path: lean4/CertiorPlan/app/CertiorDap.lean
+    phase: B2
+    proof_family: debugger

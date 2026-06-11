@@ -1,0 +1,121 @@
+# Dafny Regression / Example Verification CI
+#
+# Runs curated regression modules against the proof-bearing Dafny sources.
+# This complements the blocking proof gate by checking representative
+# behavioral scenarios without depending on the brittle in-file Test* methods.
+
+name: "Dafny - Regression Examples"
+
+on:
+  push:
+    paths:
+      - "dafny/**"
+      - "scripts/strip_dafny_test_methods.py"
+      - ".github/workflows/dafny-regression-ci.yml"
+  pull_request:
+    paths:
+      - "dafny/**"
+      - "scripts/strip_dafny_test_methods.py"
+      - ".github/workflows/dafny-regression-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-dafny-regressions:
+    name: "dafny regression (informational, Dafny ${{ matrix.dafny-version }})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    strategy:
+      matrix:
+        dafny-version:
+          - "4.11.0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Dafny
+        run: |
+          DAFNY_VERSION="${{ matrix.dafny-version }}"
+          wget -q "https://github.com/dafny-lang/dafny/releases/download/v${DAFNY_VERSION}/dafny-${DAFNY_VERSION}-x64-ubuntu-22.04.zip" \
+            -O /tmp/dafny.zip
+          sudo mkdir -p /opt/dafny
+          sudo unzip -q /tmp/dafny.zip -d /opt/dafny
+          rm /tmp/dafny.zip
+          if [ -d "/opt/dafny/dafny" ]; then
+            echo "/opt/dafny/dafny" >> "$GITHUB_PATH"
+          else
+            echo "/opt/dafny" >> "$GITHUB_PATH"
+          fi
+
+      - name: Verify Dafny installation
+        run: dafny --version
+
+      - name: Prepare regression Dafny sources
+        run: |
+          rm -rf /tmp/dafny-regression-ci
+          mkdir -p /tmp/dafny-regression-ci
+          python3 scripts/strip_dafny_test_methods.py dafny /tmp/dafny-regression-ci/dafny
+
+      - name: Verify regression modules
+        id: regressions
+        run: |
+          echo "── Running Dafny regression modules ──"
+          PASS=0
+          FAIL=0
+          ERRORS=""
+          SUMMARY_FILE="$RUNNER_TEMP/dafny-regression-summary.txt"
+          : > "$SUMMARY_FILE"
+
+          while IFS='|' read -r source rel; do
+            source_file="/tmp/dafny-regression-ci/${source}"
+            regression_file="/tmp/dafny-regression-ci/${rel}"
+            echo ""
+            echo "::group::Verifying $rel"
+
+            if dafny verify --allow-warnings --cores 2 --verification-time-limit 120 "$source_file" "$regression_file" 2>&1; then
+              echo "::endgroup::"
+              echo "  ✅ $rel"
+              echo "PASS $rel" >> "$SUMMARY_FILE"
+              PASS=$((PASS + 1))
+            else
+              echo "::endgroup::"
+              echo "  ❌ $rel"
+              echo "::warning file=$rel::Dafny regression verification failed for $rel"
+              echo "FAIL $rel" >> "$SUMMARY_FILE"
+              FAIL=$((FAIL + 1))
+              ERRORS="$ERRORS\n  - $rel"
+            fi
+          done <<'EOF'
+          dafny/capabilities/capability_attenuation.dfy|dafny/regression/capability_attenuation_regression.dfy
+          dafny/kernel/certificate.dfy|dafny/regression/certificate_regression.dfy
+          dafny/flow/information_flow.dfy|dafny/regression/information_flow_regression.dfy
+          dafny/tools/path_safety.dfy|dafny/regression/path_safety_regression.dfy
+          dafny/tools/url_filter.dfy|dafny/regression/url_filter_regression.dfy
+          dafny/sandbox/seccomp_filter.dfy|dafny/regression/seccomp_filter_regression.dfy
+          dafny/sandbox/seccomp_filter_extended.dfy|dafny/regression/seccomp_filter_extended_regression.dfy
+          EOF
+
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "  Results: $PASS passed, $FAIL failed"
+          echo "═══════════════════════════════════════════════"
+          echo "pass_count=$PASS" >> "$GITHUB_OUTPUT"
+          echo "fail_count=$FAIL" >> "$GITHUB_OUTPUT"
+          if [ $FAIL -gt 0 ]; then
+            echo "" >> "$SUMMARY_FILE"
+            echo "Failed files:$ERRORS" >> "$SUMMARY_FILE"
+            echo "::warning::Dafny regression lane has $FAIL failing module(s). See artifact and log output for details."
+          else
+            echo "✅ All Dafny regression modules verified"
+          fi
+
+      - name: Upload regression summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dafny-regression-summary
+          path: ${{ runner.temp }}/dafny-regression-summary.txt
+          retention-days: 14

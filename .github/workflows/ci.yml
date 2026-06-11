@@ -1,0 +1,407 @@
+# ─────────────────────────────────────────────────────────────────────
+# Certior Lean 4 + VS Code Extension CI
+#
+# Job 1: lake build CertiorLattice + CertiorPlan, plan-tests,
+#        plan-export, and certior-flow-check smoke.
+# Job 2: npm ci + npm run compile for the TypeScript extension.
+# ─────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # ─── Job 1: Lean4 Kernel ──────────────────────────────────────────
+  lean:
+    name: "Lean4 Kernel (lake build + test)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Lean toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            ~/.cache/elan
+          key: lean-toolchain-${{ runner.os }}-${{ hashFiles('lean4/CertiorPlan/lean-toolchain', 'lean4/CertiorLattice/lean-toolchain') }}
+
+      - name: Install pinned Lean toolchain
+        run: bash ./scripts/install-lean-toolchain.sh
+
+      # ── Step 2: Build CertiorLattice (proven lattice proofs) ──
+      - name: Build CertiorLattice
+        working-directory: lean4/CertiorLattice
+        run: |
+          echo "::group::lake build CertiorLattice"
+          lake build
+          echo "::endgroup::"
+
+      # ── Step 3: Verify zero sorry in lattice proofs ──
+      - name: Check CertiorLattice for sorry
+        working-directory: lean4/CertiorLattice
+        run: |
+          python3 ../../scripts/check_lean_sorry.py . --exclude-dir .lake
+          echo "✅ CertiorLattice: zero sorry"
+
+      # ── Step 4: Build CertiorPlan (all 4 executables) ──
+      - name: Build CertiorPlan
+        working-directory: lean4/CertiorPlan
+        run: |
+          echo "::group::lake build CertiorPlan"
+          lake build plan-tests plan-export certior-dap certior-flow-check certior-plan-graph-export
+          echo "::endgroup::"
+
+          echo ""
+          echo "── Verifying binaries ──"
+          for bin in plan-tests plan-export certior-dap certior-flow-check certior-plan-graph-export; do
+            if [ -x ".lake/build/bin/$bin" ]; then
+              SIZE=$(du -h ".lake/build/bin/$bin" | cut -f1)
+              echo "  ✅ $bin ($SIZE)"
+            else
+              echo "  ❌ $bin MISSING"
+              exit 1
+            fi
+          done
+
+      # ── Step 5: Verify zero sorry in plan kernel ──
+      - name: Check CertiorPlan for sorry
+        working-directory: lean4/CertiorPlan
+        run: |
+          python3 ../../scripts/check_lean_sorry.py . --exclude-dir .lake --exclude-dir Test
+          echo "✅ CertiorPlan: zero sorry"
+
+      # ── Step 6: Run Lean test suite ──
+      - name: Run Lean tests
+        working-directory: lean4/CertiorPlan
+        run: |
+          echo "::group::plan-tests"
+          lake exe plan-tests
+          echo "::endgroup::"
+          echo "✅ Lean tests passed"
+
+      # ── Step 7: Verify plan-export works ──
+      - name: Verify plan-export
+        working-directory: lean4/CertiorPlan
+        run: |
+          lake exe plan-export --help
+          echo ""
+          lake exe plan-export --list
+          echo ""
+          echo "── Export basic plan ──"
+          lake exe plan-export --decl basic | head -20
+          echo ""
+          echo "── Export and validate HIPAA plan ──"
+          lake exe plan-export --decl hipaa --validate
+          echo ""
+          echo "── Export and validate SOX plan ──"
+          lake exe plan-export --decl sox --validate
+          echo ""
+          echo "✅ plan-export works"
+
+      # ── Step 8: Smoke-test certior-flow-check (JSON protocol) ──
+      - name: Smoke-test flow-check binary
+        working-directory: lean4/CertiorPlan
+        run: |
+          BIN=".lake/build/bin/certior-flow-check"
+          CERTIOR_FLOW_BIN="$BIN" python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          bin_path = os.environ["CERTIOR_FLOW_BIN"]
+
+          def read_json_message(stream) -> dict:
+            buffer = ""
+            while True:
+              raw = stream.readline()
+              if not raw:
+                raise RuntimeError(f"{bin_path} closed stdout before a full JSON message was received")
+              chunk = raw.strip()
+              if not chunk:
+                continue
+              buffer = f"{buffer}\n{chunk}".strip() if buffer else chunk
+              try:
+                return json.loads(buffer)
+              except json.JSONDecodeError:
+                continue
+
+          process = subprocess.Popen(
+            [bin_path],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+          )
+
+          def send(payload: dict) -> dict:
+            assert process.stdin is not None
+            process.stdin.write(json.dumps(payload) + "\n")
+            process.stdin.flush()
+            return read_json_message(process.stdout)
+
+          try:
+            print("── Ready banner + init command ──")
+            ready = read_json_message(process.stdout)
+            print(json.dumps(ready, indent=2, sort_keys=True))
+            assert ready.get("ready") is True, f"ready banner failed: {ready}"
+            assert ready.get("version"), f"missing version: {ready}"
+            print("  ✅ ready banner: ok")
+
+            init = send({"cmd": "init", "budget": 1000, "capabilities": [], "compliance": "default"})
+            print(json.dumps(init, indent=2, sort_keys=True))
+            assert init.get("ok") is True, f"init failed: {init}"
+            assert init.get("cmd") == "init", f"unexpected init response: {init}"
+            print("  ✅ init: ok")
+
+            print()
+            print("── check_flow: Public → Internal (should allow) ──")
+            allowed = send({
+              "cmd": "check_flow",
+              "step_index": 0,
+              "tool": "ci_smoke",
+              "input_labels": ["Public"],
+              "output_label": "Internal",
+              "data_id": "ci_public_internal",
+              "cost": 10,
+            })
+            print(json.dumps(allowed, indent=2, sort_keys=True))
+            assert allowed.get("ok") is True, f"flow check failed: {allowed}"
+            assert allowed.get("proven") is True, f"not proven: {allowed}"
+            assert allowed.get("cmd") == "check_flow", f"unexpected flow response: {allowed}"
+            print("  ✅ Public → Internal: allowed (proven)")
+
+            print()
+            print("── check_flow: Sensitive → Public (should DENY) ──")
+            denied = send({
+              "cmd": "check_flow",
+              "step_index": 1,
+              "tool": "ci_smoke",
+              "input_labels": ["Sensitive"],
+              "output_label": "Public",
+              "data_id": "ci_sensitive_public",
+              "cost": 10,
+            })
+            print(json.dumps(denied, indent=2, sort_keys=True))
+            assert denied.get("ok") is False, f"should have denied: {denied}"
+            assert denied.get("proven") is True, f"denial not proven: {denied}"
+            assert denied.get("error") == "flow_violation", f"unexpected denial response: {denied}"
+            print("  ✅ Sensitive → Public: DENIED (proven by lattice)")
+
+            shutdown = send({"cmd": "shutdown"})
+            assert shutdown.get("ok") is True, f"shutdown failed: {shutdown}"
+            assert shutdown.get("cmd") == "shutdown", f"unexpected shutdown response: {shutdown}"
+            print()
+            print("✅ certior-flow-check protocol works")
+          finally:
+            process.kill()
+            process.wait(timeout=5)
+          PY
+
+      # ── Step 9: Generate planInfo artifacts ──
+      - name: Generate planInfo examples
+        working-directory: lean4/CertiorPlan
+        run: |
+          mkdir -p .dap
+          lake exe plan-export --decl basic --out .dap/planInfo.generated.json
+          lake exe plan-export --decl hipaa --out .dap/hipaa.planInfo.json
+          lake exe plan-export --decl sox --out .dap/sox.planInfo.json
+          echo "✅ planInfo artifacts generated"
+
+      - name: Upload Lean build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lean4-binaries
+          path: |
+            lean4/CertiorPlan/.lake/build/bin/
+            lean4/CertiorPlan/.dap/
+          retention-days: 30
+
+  # ─── Job 2: Production Gate (core release checks) ───────────────────
+  production-gate:
+    name: "Production Gate (Lean+DAP+Extension)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Lean toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            ~/.cache/elan
+          key: lean-toolchain-${{ runner.os }}-${{ hashFiles('lean4/CertiorPlan/lean-toolchain', 'lean4/CertiorLattice/lean-toolchain') }}
+
+      - name: Install pinned Lean toolchain
+        run: bash ./scripts/install-lean-toolchain.sh
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify lockfiles
+        run: |
+          test -f uv.lock
+          test -f lean4/CertiorPlan/client/package-lock.json
+
+      - name: Build Lean production core
+        run: ./scripts/build-lean.sh --build-only
+
+      - name: Build full CertiorPlan
+        working-directory: lean4/CertiorPlan
+        run: lake build
+
+      - name: Build and package VS Code extension
+        run: ./scripts/build-extension.sh --package
+
+      - name: Golden DAP smoke test
+        run: |
+          cd lean4/CertiorPlan
+          mkdir -p .dap
+          lake exe plan-export --decl basic --out .dap/planInfo.generated.json
+          cd ../..
+          timeout 30 python3 scripts/dap-smoke-test.py \
+            --dap lean4/CertiorPlan/.lake/build/bin/certior-dap \
+            --planinfo lean4/CertiorPlan/.dap/planInfo.generated.json
+
+      - name: Set flow-check deployment env
+        run: |
+          FLOW_BIN="$GITHUB_WORKSPACE/lean4/CertiorPlan/.lake/build/bin/certior-flow-check"
+          test -x "$FLOW_BIN"
+          echo "CERTIOR_FLOW_CHECK_BINARY=$FLOW_BIN" >> "$GITHUB_ENV"
+
+  verification-graph:
+    name: "Verification Graph (ingest + query validation)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: certior
+          POSTGRES_PASSWORD: certior
+          POSTGRES_DB: certior
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U certior -d certior"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://certior:certior@127.0.0.1:5432/certior
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cache Lean toolchain
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            ~/.cache/elan
+          key: lean-toolchain-${{ runner.os }}-${{ hashFiles('lean4/CertiorPlan/lean-toolchain', 'lean4/CertiorLattice/lean-toolchain') }}
+
+      - name: Install pinned Lean toolchain
+        run: bash ./scripts/install-lean-toolchain.sh
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          pip install -e ".[all,dev]"
+
+      - name: Build Lean graph exporters
+        run: |
+          cd lean4/CertiorLattice
+          lake build certior-lattice-graph-export
+          cd ../CertiorPlan
+          lake build certior-plan-graph-export certior-flow-check
+
+      - name: Validate verification graph ingest
+        run: |
+          python scripts/validate_verification_graph.py \
+            --dsn "$DATABASE_URL" \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --output .data/verification-graph-validation.json
+
+      - name: Upload verification graph validation artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-graph-validation
+          path: .data/verification-graph-validation.json
+          retention-days: 14
+
+  # ─── Job 3: VS Code Extension ─────────────────────────────────────
+  client:
+    name: "VS Code Extension (npm compile)"
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: lean4/CertiorPlan/client
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - run: npm ci
+      - run: npm run compile
+
+      - name: Verify output
+        run: |
+          test -f out/extension.js || { echo "❌ out/extension.js missing"; exit 1; }
+          echo "✅ extension.js compiled ($(wc -l < out/extension.js) lines)"
+
+  # ─── Job 4: Python Agent Tests ────────────────────────────────────
+  python:
+    name: "Python Agent (pytest)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[all,dev]"
+
+      - name: Run tests
+        # Unit + SDK + app-with-mocks. Postgres-driven tests covered by
+        # python-ci.yml's test-postgres job. test_integration_full and
+        # test_multi_provider are excluded from this suite because their
+        # use of a shared PgStateStore pool is not isolated between tests.
+        run: |
+          pytest tests/ \
+            --ignore=tests/test_integration_full.py \
+            --ignore=tests/test_multi_provider.py \
+            --ignore=tests/test_verification_graph/test_runtime_postgres.py \
+            -q --tb=short
+
+      - name: Verify lean_live_verifier tests
+        run: |
+          pytest tests/test_lean_live_verifier.py -v

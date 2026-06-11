@@ -1,0 +1,94 @@
+{
+  "skill_id": "web_browsing",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "Web Browsing",
+    "description": "Fetch and parse web pages with safety guarantees",
+    "author": "Certior Team",
+    "tags": [
+      "web",
+      "http",
+      "scraping"
+    ],
+    "risk_level": "medium"
+  },
+  "verification_requirements": {
+    "capabilities_required": [
+      "network:http:read",
+      "filesystem:cache:write"
+    ],
+    "resource_constraints": {
+      "max_requests_per_minute": 60,
+      "max_body_size_bytes": 10485760,
+      "timeout_seconds": 30,
+      "max_memory_mb": 512
+    },
+    "safety_constraints": {
+      "url_allowlist_patterns": [
+        "^https://.*",
+        "^http://localhost.*"
+      ],
+      "url_blocklist_patterns": [
+        ".*\\.onion(/.*)?$",
+        ".*\\.gov(/.*)?$",
+        ".*\\.mil(/.*)?$"
+      ],
+      "content_filters": [
+        "no_malware",
+        "no_phishing"
+      ],
+      "user_agent_required": true
+    },
+    "information_flow": {
+      "input_labels": [
+        "public",
+        "internal"
+      ],
+      "output_labels": [
+        "cached",
+        "internal"
+      ],
+      "forbidden_flows": [
+        {
+          "from": "sensitive",
+          "to": "public"
+        },
+        {
+          "from": "internal",
+          "to": "external"
+        }
+      ]
+    },
+    "formal_properties": [
+      {
+        "property": "no_unauthorized_domains",
+        "prover": "z3",
+        "specification": "forall url: url matches allowlist AND url not in blocklist"
+      },
+      {
+        "property": "rate_limit_respected",
+        "prover": "z3",
+        "specification": "count(requests, window=60s) <= max_requests_per_minute"
+      },
+      {
+        "property": "no_data_exfiltration",
+        "prover": "z3",
+        "specification": "forall req: req.method == GET => no POST body"
+      }
+    ]
+  },
+  "compliance_mappings": {
+    "hipaa": {
+      "applies": false,
+      "rationale": "No PHI access"
+    },
+    "sox": {
+      "applies": true,
+      "rationale": "May access MNPI sources"
+    },
+    "gdpr": {
+      "applies": true,
+      "rationale": "May collect personal data"
+    }
+  }
+}

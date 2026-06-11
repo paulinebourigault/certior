@@ -1,0 +1,61 @@
+name: Feature request
+description: Propose a new capability, adapter, or improvement.
+title: "[feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for thinking about how Certior should grow.
+
+        Before opening a request, please check the [open issues](../issues) and
+        [discussions](../discussions) - your idea may already be in flight.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is the user-facing problem this feature would solve? Skip the proposed solution for now - describe the pain.
+      placeholder: "When wrapping a CrewAI agent that delegates to sub-agents, capability checks today only consider the root agent's permission set, so sub-agents inherit access they should not have."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like Certior to behave? Sketch the user-facing API or workflow if you have one in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or other approaches did you weigh? Why are they insufficient?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface does this touch?
+      multiple: true
+      options:
+        - SDK (Guard, VerifyResult, Policy)
+        - Adapters (OpenAI / Anthropic / LangChain / CrewAI / MCP)
+        - Server (FastAPI app under app/)
+        - Studio (Next.js frontend)
+        - Policy model (Lean / Z3)
+        - Documentation
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Use cases, links to research, related projects - anything that helps understand the request.
+    validations:
+      required: false

@@ -1,0 +1,54 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Certior: Doctor",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "bash ./scripts/certior-doctor.sh"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Certior: Start Local PostgreSQL",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "docker compose up -d postgres && docker compose ps postgres"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Certior: Generate live runtime evidence and ingest graph",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "bash ./scripts/generate-runtime-evidence.sh"
+      ],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Certior: Run verification graph PostgreSQL tests",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pytest",
+      "args": [
+        "tests/test_verification_graph/test_runtime_postgres.py",
+        "-q"
+      ],
+      "options": {
+        "env": {
+          "DATABASE_URL": "postgresql://certior:certior@127.0.0.1:5432/certior"
+        }
+      },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

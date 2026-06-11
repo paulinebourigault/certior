@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 560" width="520" height="560" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif">
+  <!-- Background -->
+  <rect width="520" height="560" fill="#0d1117" rx="12"/>
+
+  <!-- Title -->
+  <text x="260" y="44" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="600" letter-spacing="0.5">Three Layers of Formal Assurance</text>
+  <text x="260" y="64" text-anchor="middle" fill="#8b949e" font-size="11">Every agent action must pass all three before execution</text>
+
+  <!-- Connector lines between layers -->
+  <line x1="260" y1="142" x2="260" y2="168" stroke="#30363d" stroke-width="2" stroke-dasharray="4,3"/>
+  <line x1="260" y1="298" x2="260" y2="324" stroke="#30363d" stroke-width="2" stroke-dasharray="4,3"/>
+
+  <!-- Arrow heads -->
+  <polygon points="260,168 255,158 265,158" fill="#30363d"/>
+  <polygon points="260,324 255,314 265,314" fill="#30363d"/>
+
+  <!-- ── LAYER 1: Z3 ── -->
+  <rect x="50" y="84" width="420" height="78" rx="10" fill="#0f2a1e" stroke="#238636" stroke-width="1.5"/>
+  <rect x="50" y="84" width="6" height="78" rx="3" fill="#2ea043"/>
+  <!-- Icon area -->
+  <rect x="72" y="104" width="38" height="38" rx="6" fill="#238636" opacity="0.4"/>
+  <text x="91" y="128" text-anchor="middle" fill="#3fb950" font-size="20">∑</text>
+  <!-- Layer label -->
+  <text x="124" y="109" fill="#8b949e" font-size="10" font-weight="500" letter-spacing="1">LAYER 1 ,  RUNTIME CONSTRAINTS</text>
+  <text x="124" y="129" fill="#e6edf3" font-size="14" font-weight="700">Z3 Constraint Solver</text>
+  <text x="124" y="148" fill="#8b949e" font-size="11">Checks capability budgets, rate limits &amp; flow</text>
+  <!-- Badge -->
+  <rect x="380" y="100" width="74" height="22" rx="11" fill="#238636" opacity="0.25"/>
+  <text x="417" y="115" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="600">Microsoft Research</text>
+
+  <!-- ── LAYER 2: Lean 4 ── -->
+  <rect x="50" y="168" width="420" height="130" rx="10" fill="#0e1f3d" stroke="#1f6feb" stroke-width="1.5"/>
+  <rect x="50" y="168" width="6" height="130" rx="3" fill="#388bfd"/>
+  <!-- Icon area -->
+  <rect x="72" y="192" width="38" height="38" rx="6" fill="#1f6feb" opacity="0.4"/>
+  <text x="91" y="216" text-anchor="middle" fill="#58a6ff" font-size="18" font-weight="700">λ</text>
+  <!-- Layer label -->
+  <text x="124" y="193" fill="#8b949e" font-size="10" font-weight="500" letter-spacing="1">LAYER 2 ,  FORMAL FLOW VERIFICATION</text>
+  <text x="124" y="213" fill="#e6edf3" font-size="14" font-weight="700">Lean 4 Proof Assistant</text>
+  <text x="124" y="232" fill="#8b949e" font-size="11">Proves agent-to-agent permission handoffs obey the</text>
+  <text x="124" y="248" fill="#8b949e" font-size="11">information-flow lattice - mathematically, not statistically</text>
+  <!-- Theorem count badge -->
+  <rect x="124" y="262" width="110" height="20" rx="10" fill="#1f6feb" opacity="0.2"/>
+  <text x="179" y="276" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">156 proven theorems</text>
+  <!-- ~2ms badge -->
+  <rect x="246" y="262" width="80" height="20" rx="10" fill="#1f6feb" opacity="0.2"/>
+  <text x="286" y="276" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">~2ms overhead</text>
+
+  <!-- ── LAYER 3: Dafny / seccomp ── -->
+  <rect x="50" y="324" width="420" height="78" rx="10" fill="#1a0e2e" stroke="#8957e5" stroke-width="1.5"/>
+  <rect x="50" y="324" width="6" height="78" rx="3" fill="#8957e5"/>
+  <!-- Icon area -->
+  <rect x="72" y="344" width="38" height="38" rx="6" fill="#8957e5" opacity="0.35"/>
+  <text x="91" y="368" text-anchor="middle" fill="#bc8cff" font-size="18">🔒</text>
+  <!-- Layer label -->
+  <text x="124" y="349" fill="#8b949e" font-size="10" font-weight="500" letter-spacing="1">LAYER 3 ,  OS ENFORCEMENT</text>
+  <text x="124" y="369" fill="#e6edf3" font-size="14" font-weight="700">Dafny + seccomp (kernel-level)</text>
+  <text x="124" y="388" fill="#8b949e" font-size="11">No syscall, file access, or network egress without a signed token</text>
+
+  <!-- ── Output section ── -->
+  <line x1="260" y1="402" x2="260" y2="428" stroke="#30363d" stroke-width="2" stroke-dasharray="4,3"/>
+  <polygon points="260,428 255,418 265,418" fill="#30363d"/>
+
+  <rect x="100" y="428" width="320" height="68" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="260" y="454" text-anchor="middle" fill="#8b949e" font-size="10" font-weight="500" letter-spacing="1">OUTPUT</text>
+  <text x="260" y="473" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">Signed Proof Certificate + PDF Audit Export</text>
+  <text x="260" y="490" text-anchor="middle" fill="#8b949e" font-size="11">Z3 proofs, Lean certificates, Dafny/seccomp evidence</text>
+
+  <!-- Footer note -->
+  <text x="260" y="535" text-anchor="middle" fill="#484f58" font-size="10">All three layers run in sequence. Any failure halts execution.</text>
+
+</svg>

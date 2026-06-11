@@ -1,0 +1,105 @@
+name: Bug report
+description: Report a defect in Certior - wrong verdict, crash, or unexpected behaviour.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to file a bug report.
+
+        **Security issues** - if this report concerns a vulnerability, please
+        **do not file it here**. Instead, follow the disclosure process in
+        [`SECURITY.md`](../blob/main/SECURITY.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing what went wrong.
+      placeholder: "Guard.verify allowed a tool call that should have been blocked under the hipaa policy."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal reproducer
+      description: A short code snippet, command, or HTTP request that reproduces the issue.
+      render: python
+      placeholder: |
+        from certior import Guard
+        guard = Guard(policy="hipaa", budget_cents=100)
+        result = guard.verify(tool="db_query", params={"sql": "SELECT ssn FROM patients"})
+        # Expected: result.allowed == False
+        # Actual:   result.allowed == True
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What actually happened (full error trace if relevant).
+    validations:
+      required: true
+
+  - type: input
+    id: certior-version
+    attributes:
+      label: Certior version
+      description: "Run `pip show certior | grep Version` (or paste a git commit hash if installed from source)."
+      placeholder: "0.5.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.11.8"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (please specify in additional context)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: adapter
+    attributes:
+      label: Which adapter is involved (if any)?
+      options:
+        - "No adapter (direct Guard.verify call)"
+        - OpenAI tool-calling
+        - Anthropic tool_use
+        - LangChain
+        - CrewAI
+        - MCP
+        - Custom loop / other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, related issues, environment details - anything else that helps.
+    validations:
+      required: false

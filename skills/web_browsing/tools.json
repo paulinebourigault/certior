@@ -1,0 +1,42 @@
+{
+  "tools": [
+    {
+      "name": "fetch_url",
+      "description": "Fetch the contents of a web page at a given URL",
+      "parameters": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to fetch (must be HTTPS)"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "description": "Request timeout in seconds (default: 30)",
+            "default": 30
+          }
+        }
+      }
+    },
+    {
+      "name": "search_web",
+      "description": "Search the web for a given query and return result URLs",
+      "parameters": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results to return",
+            "default": 10
+          }
+        }
+      }
+    }
+  ]
+}

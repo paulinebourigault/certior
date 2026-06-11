@@ -1,0 +1,123 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Certior",
+  "description": "A capability boundary for multi-agent AI. Every tool call is checked against a Lean-proven policy before it runs.",
+  "colors": {
+    "primary": "#0F172A",
+    "light": "#F8EFE3",
+    "dark": "#0F172A"
+  },
+  "favicon": "/favicon.png",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/how-it-works",
+              "concepts/capability-model",
+              "concepts/certificates",
+              "concepts/policies"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/openai",
+              "guides/langchain",
+              "guides/crewai",
+              "guides/openclaw",
+              "guides/custom-loop"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/github-action",
+              "integrations/skill-audit",
+              "integrations/studio"
+            ]
+          },
+          {
+            "group": "API",
+            "pages": [
+              "api/overview",
+              "api/authentication",
+              "api/tasks",
+              "api/executions",
+              "api/workflows",
+              "api/compliance",
+              "api/releases"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/configuration",
+              "reference/lean-binary",
+              "reference/trust-package"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/paulinebourigault/certior",
+          "icon": "github"
+        },
+        {
+          "anchor": "PyPI",
+          "href": "https://pypi.org/project/certior/",
+          "icon": "box"
+        }
+      ]
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/paulinebourigault/certior"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get started",
+      "href": "/quickstart"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/paulinebourigault/certior"
+    },
+    "links": [
+      {
+        "header": "Product",
+        "items": [
+          { "label": "Quickstart", "href": "/quickstart" },
+          { "label": "PyPI", "href": "https://pypi.org/project/certior/" }
+        ]
+      },
+      {
+        "header": "Company",
+        "items": [
+          { "label": "Homepage", "href": "https://certior.io" },
+          { "label": "Contact", "href": "mailto:hello@certior.io" }
+        ]
+      }
+    ]
+  }
+}

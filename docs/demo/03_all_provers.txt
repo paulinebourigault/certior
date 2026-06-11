@@ -1,0 +1,43 @@
+
+════════════════════════════════════════════════════════════
+  Example 8: All Provers Showcase
+════════════════════════════════════════════════════════════
+
+Vitals fixture:    .workspace/patient_vitals.csv
+
+════════════════════════════════════════════════════════════
+  1. Verified Internal Analysis
+════════════════════════════════════════════════════════════
+
+Profile:          clinical_intake:single_agent
+Lean kernel:      unavailable
+Aggregate stats:  Aggregate-only cohort summary: 64 records, average heart rate 79.80, average systolic blood pressure 125.03, maximum temperature 37.3 C.
+
+════════════════════════════════════════════════════════════
+  2. Attempted Public Disclosure
+════════════════════════════════════════════════════════════
+
+Public result:    Aggregate-only cohort summary: 64 records, average heart rate 79.80, average systolic blood pressure 125.03, maximum temperature 37.3 C.
+
+════════════════════════════════════════════════════════════
+  3. Exported Evidence
+════════════════════════════════════════════════════════════
+
+Compliant:        False
+Proofs:           ['minimum_necessary_access', 'authorized_user_only', 'phi_stage_contained']
+Cert provers:     {'dafny': 1, 'dafny+runtime': 1, 'z3': 2}
+Lean runtime:     unavailable / z3_only
+Dafny proof:
+  profile:        network_blocked
+  properties:     ['P34', 'P35', 'P36', 'P37', 'P38', 'P39', 'P40', 'P41', 'P43', 'P44', 'P45', 'P46', 'P47', 'P48', 'P49', 'P50', 'P51', 'P52', 'P53', 'P54']
+Seccomp evidence:
+  regime:         hipaa
+  profile:        network_blocked
+  all passed:     True
+
+Takeaway:
+  Z3 verified both tool calls before execution.
+  Lean verified the tool flows and then blocked the attempted internal-to-public disclosure.
+  Dafny-backed seccomp evidence was exported from the sandboxed python_eval step.
+  Example 07 remains the live API workflow demo for reviewed public release.
+  Persisted execution: no (710a600e-7430-48ac-9e49-b905f20ca290)
