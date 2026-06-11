@@ -46,10 +46,14 @@ class BinaryEntry(TypedDict):
 BINARIES: Dict[str, Optional[BinaryEntry]] = {
     "linux-x86_64": {
         "filename": "certior-flow-check-linux-x86_64",
-        "sha256": "2f876e8bc84a2d55702a6d39c4e1e086410f80448beaed3f5f9796a07903d58d",  # pragma: allowlist secret
+        "sha256": "8e626271101f475e32fc978926342d666fc940a551c8be69482010c0597abe7c",  # pragma: allowlist secret
         "size": 93476576,
     },
-    "macos-arm64": None,
+    "macos-arm64": {
+        "filename": "certior-flow-check-macos-arm64",
+        "sha256": "31271e64ef36f6dea221b41161626a563dab02d38a67af40157d53e2e8af88fc",  # pragma: allowlist secret
+        "size": 79097904,
+    },
     "macos-x86_64": None,
 }
 
