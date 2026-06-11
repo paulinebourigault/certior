@@ -83,6 +83,10 @@ ner = ["spacy>=3.7.0"]
 llm = ["anthropic>=0.39.0"]
 openai-llm = ["openai>=1.12.0"]
 pdf = ["reportlab>=4.0.0"]
+# Live Lean flow verification. The extra ensures the download client is
+# present; run `certior-install-lean` afterwards to fetch the ~90 MB binary
+# (it is not bundled in the wheel). Without it the runtime uses Z3-only.
+lean = ["httpx>=0.26.0"]
 all = ["certior[api,postgres,redis,observability,llm,openai-llm,pdf]"]
 dev = [
     "pytest>=8.0.0",
@@ -96,6 +100,7 @@ certior-graph-ingest = "agentsafe.verification_graph.cli:main_ingest"
 certior-doctor = "agentsafe.verification_graph.ops_cli:main_doctor"
 certior-runtime-evidence = "agentsafe.verification_graph.ops_cli:main_runtime_evidence"
 certior-skill-audit = "certior.adapters.openclaw_skill_audit_cli:main"
+certior-install-lean = "certior.lean_installer:main"
 
 [project.urls]
 Homepage = "https://certior.io"

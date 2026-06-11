@@ -1,0 +1,168 @@
+name: Release certior-flow-check binaries
+
+# Publishes the Lean live-verification binary as GitHub Release assets so
+# that `certior-install-lean` can download it. Triggered by pushing a
+# `lean-binary-v*` tag (or manually with dry_run).
+#
+# Flow:
+#   1. Build certior-flow-check on each platform (mirrors lean-binary-ci.yml).
+#   2. Assemble the artefacts and regenerate certior/_lean_binary_manifest.py
+#      with their real SHA-256 hashes (scripts/prepare-lean-release.py).
+#   3. Create the GitHub Release for the tag and upload the binaries.
+#   4. Open a PR updating the committed manifest — merge it, then cut the
+#      matching pip release so the wheel ships the new hashes.
+
+on:
+  push:
+    tags:
+      - 'lean-binary-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. lean-binary-v0.1.0a2)'
+        required: true
+      dry_run:
+        description: 'Build + regenerate manifest but do NOT publish or open a PR'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write       # create the Release, push the manifest branch
+  pull-requests: write  # open the manifest-update PR
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artefact: certior-flow-check-linux-x86_64
+          - os: macos-latest
+            artefact: certior-flow-check-macos-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan (Lean 4 toolchain manager)
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Read Lean toolchain
+        id: toolchain
+        run: |
+          if [ -f lean4/CertiorPlan/lean-toolchain ]; then
+            echo "version=$(cat lean4/CertiorPlan/lean-toolchain)" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache Lake build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            lean4/CertiorPlan/.lake
+            lean4/CertiorLattice/.lake
+          key: lake-${{ runner.os }}-${{ steps.toolchain.outputs.version }}-${{ hashFiles('lean4/CertiorPlan/lakefile.lean', 'lean4/CertiorLattice/lakefile.lean') }}
+          restore-keys: |
+            lake-${{ runner.os }}-${{ steps.toolchain.outputs.version }}-
+            lake-${{ runner.os }}-
+
+      - name: Build certior-flow-check
+        run: bash scripts/build-lean-binary.sh
+
+      - name: Smoke-test the binary
+        run: |
+          BIN=lean4/CertiorPlan/.lake/build/bin/certior-flow-check
+          test -x "$BIN"
+          echo "binary size: $(du -h "$BIN" | cut -f1)"
+          # Confirm the stdin-protocol handshake works before we ship it.
+          printf '' | timeout 10 "$BIN" >/tmp/handshake.txt 2>/dev/null || true
+          grep -q '"ready": true' /tmp/handshake.txt && echo "handshake OK" || echo "handshake: (daemon mode)"
+
+      - name: Upload binary as workflow artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artefact }}
+          path: lean4/CertiorPlan/.lake/build/bin/certior-flow-check
+          retention-days: 7
+          if-no-files-found: error
+
+  release:
+    name: Publish release + update manifest
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download built binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: _artifacts
+
+      - name: Assemble dist/lean-binaries
+        run: |
+          mkdir -p dist/lean-binaries
+          for d in _artifacts/certior-flow-check-*; do
+            name=$(basename "$d")
+            cp "$d/certior-flow-check" "dist/lean-binaries/$name"
+            chmod +x "dist/lean-binaries/$name"
+          done
+          ls -l dist/lean-binaries
+
+      - name: Determine release tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Regenerate manifest with real hashes
+        run: |
+          python scripts/prepare-lean-release.py --tag "${{ steps.tag.outputs.tag }}"
+          echo "----- generated manifest -----"
+          cat certior/_lean_binary_manifest.py
+
+      - name: Create GitHub Release with binaries
+        if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          files: dist/lean-binaries/*
+          generate_release_notes: true
+          body: |
+            Prebuilt `certior-flow-check` Lean live-verification binaries.
+
+            These are downloaded and SHA-256-verified by `certior-install-lean`.
+            They are not bundled in the pip wheel (~90 MB each).
+
+      - name: Open manifest-update PR
+        if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          # The tag checkout is detached HEAD, so the PR base must be explicit.
+          base: main
+          add-paths: certior/_lean_binary_manifest.py
+          branch: lean-manifest/${{ steps.tag.outputs.tag }}
+          commit-message: "chore: update Lean binary manifest for ${{ steps.tag.outputs.tag }}"
+          title: "Update Lean binary manifest for ${{ steps.tag.outputs.tag }}"
+          body: |
+            Auto-generated by `lean-binary-release.yml`.
+
+            Updates the SHA-256 hashes + sizes for the published
+            `certior-flow-check` binaries under tag
+            `${{ steps.tag.outputs.tag }}`.
+
+            **Merge this, then cut the matching pip release** so the wheel
+            ships these hashes and `certior-install-lean` verifies against them.

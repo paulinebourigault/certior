@@ -67,18 +67,34 @@ _DEFAULT_LAKE_PATHS = [
 
 
 def _find_binary() -> Optional[str]:
-    """Locate the certior-flow-check binary."""
+    """Locate the certior-flow-check binary.
+
+    Resolution order: explicit env var → ``certior-install-lean`` cache
+    (the path pip users get) → local lake build output (source checkouts)
+    → PATH.
+    """
     # 1. Explicit env var
     env_path = os.environ.get("CERTIOR_FLOW_CHECK_BINARY")
     if env_path and Path(env_path).is_file():
         return env_path
 
-    # 2. Lake build output
+    # 2. Download-on-demand cache populated by `certior-install-lean`.
+    #    Imported lazily so the runtime never hard-depends on the installer.
+    try:
+        from certior.lean_installer import installed_binary_path
+
+        cached = installed_binary_path()
+        if cached:
+            return cached
+    except Exception:  # pragma: no cover - discovery must never crash startup
+        pass
+
+    # 3. Lake build output
     for p in _DEFAULT_LAKE_PATHS:
         if p.is_file():
             return str(p)
 
-    # 3. PATH lookup
+    # 4. PATH lookup
     for name in _DEFAULT_BINARY_NAMES:
         found = shutil.which(name)
         if found:
