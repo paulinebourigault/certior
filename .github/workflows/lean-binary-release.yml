@@ -44,7 +44,7 @@ jobs:
           - os: macos-latest
             artefact: certior-flow-check-macos-arm64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install elan (Lean 4 toolchain manager)
         run: |
@@ -62,7 +62,7 @@ jobs:
           fi
 
       - name: Cache Lake build artefacts
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             lean4/CertiorPlan/.lake
@@ -85,7 +85,7 @@ jobs:
           grep -q '"ready": true' /tmp/handshake.txt && echo "handshake OK" || echo "handshake: (daemon mode)"
 
       - name: Upload binary as workflow artefact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artefact }}
           path: lean4/CertiorPlan/.lake/build/bin/certior-flow-check
@@ -97,14 +97,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
       - name: Download built binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: _artifacts
 
@@ -135,7 +135,7 @@ jobs:
 
       - name: Create GitHub Release with binaries
         if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: ${{ steps.tag.outputs.tag }}
@@ -152,7 +152,7 @@ jobs:
         # (e.g. org PR-creation policy) must not fail the whole release.
         continue-on-error: true
         if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           # The tag checkout is detached HEAD, so the PR base must be explicit.
           base: main

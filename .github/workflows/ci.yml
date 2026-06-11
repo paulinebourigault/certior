@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Cache Lean toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.elan
@@ -216,7 +216,7 @@ jobs:
 
       - name: Upload Lean build artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: lean4-binaries
           path: |
@@ -234,7 +234,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Cache Lean toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.elan
@@ -248,7 +248,7 @@ jobs:
         with:
           node-version: "20"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -310,7 +310,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Cache Lean toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.elan
@@ -320,7 +320,7 @@ jobs:
       - name: Install pinned Lean toolchain
         run: bash ./scripts/install-lean-toolchain.sh
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -344,7 +344,7 @@ jobs:
 
       - name: Upload verification graph validation artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: verification-graph-validation
           path: .data/verification-graph-validation.json
@@ -382,7 +382,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 

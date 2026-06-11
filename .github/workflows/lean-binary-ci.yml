@@ -34,7 +34,7 @@ jobs:
           - os: macos-latest
             artefact: certior-flow-check-macos-arm64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install elan (Lean 4 toolchain manager)
         run: |
@@ -52,7 +52,7 @@ jobs:
           fi
 
       - name: Cache Lake build artefacts
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             lean4/CertiorPlan/.lake
@@ -73,7 +73,7 @@ jobs:
           file "$BIN"
 
       - name: Upload binary as workflow artefact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artefact }}
           path: lean4/CertiorPlan/.lake/build/bin/certior-flow-check

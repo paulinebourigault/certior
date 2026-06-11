@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Cache Lean toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.elan
@@ -54,7 +54,7 @@ jobs:
         run: bash ./scripts/install-lean-toolchain.sh
 
       - name: Cache lake-packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             lean4/CertiorLattice/.lake
@@ -148,7 +148,7 @@ jobs:
 
       - name: Upload build log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: lean4-build-log
           path: /tmp/lake-build.log
