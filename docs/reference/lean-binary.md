@@ -17,7 +17,19 @@ The compiled binary is ~93 MB. Shipping it inside the wheel would bloat `pip ins
 
 Without the binary, the runtime uses the Python implementation of the same subset and budget rule. Lean has proven that implementation sound offline. The behaviour is identical at the verdict level; only the source of the verdict differs.
 
-## Building it
+## Installing the prebuilt binary (recommended)
+
+`certior-install-lean` downloads the binary for your platform from the matching GitHub Release, verifies it against a SHA-256 baked into the pip package, and caches it where the runtime finds it automatically:
+
+```bash
+pip install "certior[lean]"
+certior-install-lean          # download + verify + cache
+certior-install-lean --status # show install state, re-verify integrity
+```
+
+The download **fails closed**: if the binary's hash does not match the value shipped in the package, nothing is installed. Published platforms are Linux x86_64 and macOS arm64; on any other platform the command reports that no binary is available and the runtime stays on the always-on Z3 path. The cached binary lives under `~/.cache/certior/bin/` (override with `CERTIOR_CACHE_DIR`), and the runtime discovers it with no env var to set.
+
+## Building from source (alternative)
 
 Requirements:
 
@@ -34,14 +46,14 @@ Produces the binary at `lean4/CertiorPlan/.lake/build/bin/certior-flow-check`. T
 
 ## Enabling it at runtime
 
-Point the runtime at the produced binary:
+A binary installed with `certior-install-lean` is discovered automatically - no configuration needed. For a source build, point the runtime at the produced binary instead:
 
 ```bash
 export CERTIOR_FLOW_CHECK_BINARY=lean4/CertiorPlan/.lake/build/bin/certior-flow-check
 ./run.sh
 ```
 
-When the variable is set and the binary is executable, the runtime invokes it on every verify call alongside Z3. Allowed calls then carry a dual-prover certificate (Z3 + Lean). When the variable is unset or the binary is missing, the runtime degrades to Z3-only mode rather than refusing to start.
+The runtime resolves the binary in order: `CERTIOR_FLOW_CHECK_BINARY` -> the `certior-install-lean` cache (`~/.cache/certior/bin/`) -> a local `lake` build -> `PATH`. When a binary is found and executable, the runtime invokes it on every verify call alongside Z3. Allowed calls then carry a dual-prover certificate (Z3 + Lean). When the variable is unset or the binary is missing, the runtime degrades to Z3-only mode rather than refusing to start.
 
 The OS support matrix mirrors the Lean 4 toolchain: Linux x86_64 and macOS arm64 are tested by the [`lean-binary-ci.yml`](https://github.com/paulinebourigault/certior/blob/main/.github/workflows/lean-binary-ci.yml) workflow. Windows runs through WSL.
 

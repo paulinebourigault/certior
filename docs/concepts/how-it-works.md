@@ -55,4 +55,4 @@ Certior does not verify the LLM's behaviour, the correctness of the tool impleme
 - [Capability model](/concepts/capability-model) - how permissions, delegation, and subset checking work.
 - [Certificates](/concepts/certificates) - the shape of a signed receipt.
 - [Compliance policies](/concepts/policies) - what HIPAA / SOX / `legal_privilege` actually enforce.
-- [Lean binary](/reference/lean-binary) - building the optional Lean live verifier.
+- [Lean binary](/reference/lean-binary) - installing or building the optional Lean live verifier.

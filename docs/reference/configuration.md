@@ -29,7 +29,7 @@ Three formal tools, three jobs - all driven by the same Guard configuration:
 | Tool | When it runs | Configured by |
 |---|---|---|
 | **Z3** (SMT) | Every `verify(...)` call (~tens of ms). | Built into the runtime. No separate env var. |
-| **Lean 4** | Offline / CI on every commit. Optional live flow checker when the binary is configured. | `CERTIOR_FLOW_CHECK_BINARY` for the live path. See [Lean binary](/reference/lean-binary). |
+| **Lean 4** | Offline / CI on every commit. Optional live flow checker when the binary is present. | `certior-install-lean` (auto-discovered) or `CERTIOR_FLOW_CHECK_BINARY` for a source build. See [Lean binary](/reference/lean-binary). |
 | **Dafny** | Offline / CI. | Built into the runtime modules and export path. No env var toggle. |
 
 When the Lean live binary is not configured, the runtime uses the Python implementation of the same subset/budget rule whose soundness Lean has proven offline.
@@ -67,5 +67,5 @@ When the server starts, persistence backends are selected in order:
 
 ## See also
 
-- [Lean binary](/reference/lean-binary) - building `certior-flow-check`.
+- [Lean binary](/reference/lean-binary) - installing or building `certior-flow-check`.
 - [Trust package](/reference/trust-package) - the assurance vocabulary the runtime uses.
