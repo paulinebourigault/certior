@@ -19,7 +19,7 @@ action is.** This Space shows a GPT-4o agent getting prompt-injected into
 exfiltrating patient records — then shows [Certior](https://certior.io) blocking the
 exact same action, with a signed proof.
 
-Four attacks:
+Five attacks:
 
 - **🩺 Patient-data exfiltration** — a single OpenAI function-calling agent emails the
   patient database to an outside address. Certior blocks the send: it never held
@@ -27,6 +27,10 @@ Four attacks:
 - **🔗 Delegation escalation (CrewAI)** — a read-only sub-agent in a multi-agent crew is
   told to email the export outside. It can’t escalate past the authority it was
   delegated. This is the wedge nothing else in agent-safety does.
+- **🕸️ Web page hijacks the agent (LangChain)** — a fetched status page hides an on-call
+  directive to `DROP TABLE …`. The multi-agent crew obeys it. Certior blocks the
+  destructive command: the operator held `db:read`, not `db:admin`. Indirect prompt
+  injection hijacks the model’s intent, not its authority.
 - **💸 Invoice fraud / SOX threshold** — a forged “CEO-approved” invoice walks a $480,000
   wire through an accounts-payable agent. Certior blocks it: approving over the SOX
   threshold needs `finance:approve:high_value`, which the agent was never granted.

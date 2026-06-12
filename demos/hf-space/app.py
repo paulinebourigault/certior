@@ -178,6 +178,7 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
     key = gr.Radio(
         choices=[(f"{SCENARIOS['exfil']['emoji']}  Patient-data exfiltration  ·  single agent", "exfil"),
                  (f"{SCENARIOS['deleg']['emoji']}  Delegation escalation  ·  CrewAI multi-agent", "deleg"),
+                 (f"{SCENARIOS['webinject']['emoji']}  Web page hijacks the agent  ·  LangChain multi-agent", "webinject"),
                  (f"{SCENARIOS['sox']['emoji']}  Invoice fraud / SOX threshold  ·  $480k", "sox"),
                  (f"{SCENARIOS['runaway']['emoji']}  Runaway delegation  ·  $620 budget blowout", "runaway")],
         value="exfil", label="Pick an attack", show_label=True,
