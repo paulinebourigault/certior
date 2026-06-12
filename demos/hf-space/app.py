@@ -1,11 +1,10 @@
 """
-Certior playground — watch a real AI agent get caught.
-======================================================
+Certior playground — watch an AI agent get caught.
 
-The agent transcripts are faithful replays of real GPT-4o runs 
-(recorded in demos/live/). Every Certior verdict on this page —
-allow, block, and the signed receipt — is computed live with real Z3 at the
-moment you click, by the same `certior` package that's on PyPI.
+The agent transcripts are faithful replays of real GPT-4o runs (recorded in
+demos/live/). Every Certior verdict on this page — allow, block, and the signed
+receipt — is computed live with real Z3 at the moment you click, by the same
+`certior` package that's on PyPI.
 """
 import html
 
@@ -15,7 +14,11 @@ from certior import Guard
 from storyboards import SCENARIOS
 
 POLICY = "hipaa"
-INK = "#0f172a"
+
+# warm palette — coherent with certior.io
+CREAM = "#f8efe3"; CARD = "#fffdf8"; INK = "#2a2017"; MUTED = "#7a6a58"; BODY = "#5c4f42"
+GOLD = "#b56b2a"; GREEN = "#157a3a"; RED = "#c1392b"
+BALOO = "'Baloo 2',system-ui,sans-serif"
 
 
 # ── live Certior verdicts (Z3) ────────────────────────
@@ -25,12 +28,7 @@ def verify(need, held):
 
 
 def verify_step(step):
-    """Live verdict for one step — handles capability and budget gates.
-
-    Budget steps carry {budget, cost}: the per-step `budget` is the real
-    remaining ceiling at that point in the recorded run, so the verdict (and
-    its "need X, have Y" reason) is reproduced live by Z3, not hard-coded.
-    """
+    """Live verdict for one step — handles capability and budget gates."""
     if "budget" in step:
         g = Guard(policy="default", permissions=["compute:run"],
                   budget_cents=step["budget"], agent_id="orchestrator")
@@ -40,95 +38,84 @@ def verify_step(step):
 
 
 def _chip(text, color, bg):
-    return (f"<span style='font:600 11px ui-monospace,monospace;color:{color};"
-            f"background:{bg};padding:2px 8px;border-radius:999px;white-space:nowrap'>{text}</span>")
+    return (f"<span style='font:800 11px Nunito,sans-serif;color:{color};"
+            f"background:{bg};padding:3px 9px;border-radius:999px;white-space:nowrap'>{text}</span>")
 
 
 def _step_row(step, enforced):
-    """One transcript row. enforced=False → agent just runs. True → Certior gates it."""
-    actor = html.escape(step["actor"])
-    tool = html.escape(step["tool"])
-    ret = html.escape(step["ret"])
+    actor = html.escape(step["actor"]); tool = html.escape(step["tool"]); ret = html.escape(step["ret"])
     need = "budget" if "budget" in step else " ".join(step["need"])
 
     if not enforced:
-        badge = _chip("▶ executed", "#fca5a5", "rgba(220,38,38,.15)")
-        border = "rgba(220,38,38,.25)"
+        badge = _chip("▶ executed", RED, "rgba(239,107,107,.16)"); border = "rgba(193,57,43,.22)"; bg = "rgba(239,107,107,.05)"
     else:
         r = verify_step(step)
         if r.allowed:
-            badge = _chip("✓ allowed", "#6ee7b7", "rgba(16,185,129,.15)")
-            border = "rgba(16,185,129,.25)"
+            badge = _chip("✓ allowed", GREEN, "rgba(22,163,74,.14)"); border = "rgba(22,163,74,.28)"; bg = "rgba(22,163,74,.05)"
         else:
-            badge = _chip("✗ BLOCKED", "#fca5a5", "rgba(220,38,38,.2)")
-            border = "rgba(220,38,38,.5)"
+            badge = _chip("✗ BLOCKED", RED, "rgba(239,107,107,.2)"); border = "rgba(193,57,43,.5)"; bg = "rgba(239,107,107,.09)"
 
     return f"""
-    <div style="border:1px solid {border};border-radius:10px;padding:10px 12px;margin:8px 0;background:rgba(255,255,255,.02)">
+    <div style="border:1px solid {border};border-radius:12px;padding:10px 12px;margin:8px 0;background:{bg}">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-        <code style="font:600 12.5px ui-monospace,monospace;color:#e2e8f0">{actor} → {tool}</code>
+        <code style="font:700 12.5px ui-monospace,monospace;color:{INK}">{actor} → {tool}</code>
         {badge}
       </div>
-      <div style="font-size:11.5px;color:#94a3b8;margin-top:5px">needs <code style="color:#cbd5e1">{html.escape(need)}</code></div>
-      <div style="font-size:12px;color:#cbd5e1;margin-top:4px">{ret}</div>
+      <div style="font-size:11.5px;color:{MUTED};margin-top:5px">needs <code style="color:{GOLD}">{html.escape(need)}</code></div>
+      <div style="font-size:12px;color:{BODY};margin-top:4px">{ret}</div>
     </div>"""
 
 
 def _receipt_html(step):
-    """Render a freshly-minted, real signed receipt from an allowed step."""
     r = verify_step(step)
     if r.certificate is None:
         return ""
     c = r.certificate.to_dict()
     props = "".join(
-        f"<div style='font:11px ui-monospace,monospace;color:#6ee7b7'>✓ {html.escape(p)}</div>"
-        for p in c["verified_properties"]
-    )
+        f"<div style='font:700 11px ui-monospace,monospace;color:{GREEN}'>✓ {html.escape(p)}</div>"
+        for p in c["verified_properties"])
     return f"""
-    <div style="border:1px dashed rgba(16,185,129,.5);border-radius:10px;padding:12px;margin-top:10px;background:rgba(16,185,129,.06)">
-      <div style="font:600 11px ui-monospace,monospace;color:#34d399;letter-spacing:1px">SIGNED RECEIPT · minted live by Z3</div>
-      <div style="font:11px ui-monospace,monospace;color:#cbd5e1;margin-top:6px">id {html.escape(c['id'][:18])}…</div>
-      <div style="font:11px ui-monospace,monospace;color:#cbd5e1">theorem {html.escape(c['theorem'])}</div>
+    <div style="border:1px dashed rgba(22,163,74,.45);border-radius:12px;padding:12px;margin-top:10px;background:rgba(22,163,74,.07)">
+      <div style="font:800 11px Nunito,sans-serif;color:{GREEN};letter-spacing:1px">SIGNED RECEIPT · minted live by Z3</div>
+      <div style="font:600 11px ui-monospace,monospace;color:{BODY};margin-top:6px">id {html.escape(c['id'][:18])}…</div>
+      <div style="font:600 11px ui-monospace,monospace;color:{BODY}">theorem {html.escape(c['theorem'])}</div>
       <div style="margin-top:6px">{props}</div>
-      <div style="font:11px ui-monospace,monospace;color:#94a3b8;margin-top:6px">prover {c['prover']} · verifiable offline</div>
+      <div style="font:600 11px ui-monospace,monospace;color:{MUTED};margin-top:6px">prover {c['prover']} · verifiable offline</div>
     </div>"""
 
 
 def _col(title, sub, color, inner):
     return f"""
-    <div style="border:1px solid {color}55;border-radius:14px;padding:16px;background:{INK};height:100%">
-      <div style="font:700 13px ui-sans-serif;color:{color};letter-spacing:.5px">{title}</div>
-      <div style="font-size:11.5px;color:#94a3b8;margin:2px 0 10px">{sub}</div>
+    <div style="border:1px solid {color}33;border-radius:18px;padding:16px;background:{CARD};height:100%;box-shadow:0 18px 40px -26px rgba(58,36,16,.35)">
+      <div style="font-family:{BALOO};font-weight:800;font-size:15px;color:{color};letter-spacing:.2px">{title}</div>
+      <div style="font-size:12px;color:{MUTED};margin:2px 0 10px">{sub}</div>
       {inner}
     </div>"""
 
 
 def run_scenario(key):
-    sc = SCENARIOS[key]
-    steps = sc["steps"]
+    sc = SCENARIOS[key]; steps = sc["steps"]
 
-    # WITHOUT — every step just executes; ends badly
     off_rows = "".join(_step_row(s, enforced=False) for s in steps)
-    off_tail = (f"<div style='font-size:11.5px;color:#94a3b8;font-style:italic;margin:6px 2px'>"
+    off_tail = (f"<div style='font-size:11.5px;color:{MUTED};font-style:italic;margin:6px 2px'>"
                 f"{html.escape(sc['off_tail'])}</div>" if sc.get("off_tail") else "")
     off_verdict = f"""
-      <div style="margin-top:12px;border-radius:10px;padding:12px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.5)">
-        <div style="font:800 16px ui-sans-serif;color:#fca5a5">☠ {html.escape(sc.get('off_label', 'BREACH'))}</div>
-        <div style="font-size:12px;color:#fecaca;margin-top:3px">{html.escape(sc['off_outcome'])}</div>
+      <div style="margin-top:12px;border-radius:14px;padding:12px;background:rgba(239,107,107,.12);border:1px solid rgba(193,57,43,.35)">
+        <div style="font-family:{BALOO};font-weight:800;font-size:17px;color:{RED}">☠ {html.escape(sc.get('off_label', 'BREACH'))}</div>
+        <div style="font-size:12px;color:#9a4339;margin-top:3px">{html.escape(sc['off_outcome'])}</div>
       </div>"""
-    off = _col("WITHOUT CERTIOR", "the agent is on its own", "#ef4444", off_rows + off_tail + off_verdict)
+    off = _col("WITHOUT CERTIOR", "the agent is on its own", RED, off_rows + off_tail + off_verdict)
 
-    # WITH — Certior gates each step live; the bad action is blocked
     on_rows = "".join(_step_row(s, enforced=True) for s in steps)
     blocked = next((s for s in steps if not verify_step(s).allowed), None)
     reason = verify_step(blocked).reason if blocked else ""
     on_verdict = f"""
-      <div style="margin-top:12px;border-radius:10px;padding:12px;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.5)">
-        <div style="font:800 16px ui-sans-serif;color:#6ee7b7">🛡 {html.escape(sc.get('on_label', 'BLOCKED'))}</div>
-        <div style="font:12px ui-monospace,monospace;color:#a7f3d0;margin-top:4px">CertiorBlocked: {html.escape(reason)}</div>
-        <div style="font-size:12px;color:#d1fae5;margin-top:4px">{html.escape(sc['on_outcome'])}</div>
+      <div style="margin-top:12px;border-radius:14px;padding:12px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.4)">
+        <div style="font-family:{BALOO};font-weight:800;font-size:17px;color:{GREEN}">🛡 {html.escape(sc.get('on_label', 'BLOCKED'))}</div>
+        <div style="font:700 12px ui-monospace,monospace;color:{GREEN};margin-top:4px">CertiorBlocked: {html.escape(reason)}</div>
+        <div style="font-size:12px;color:#3f6b4a;margin-top:4px">{html.escape(sc['on_outcome'])}</div>
       </div>"""
-    on = _col("WITH CERTIOR", "every action proven before it runs", "#10b981",
+    on = _col("WITH CERTIOR", "every action proven before it runs", GREEN,
               on_rows + _receipt_html(steps[0]) + on_verdict)
 
     return gr.update(value=off, visible=True), gr.update(value=on, visible=True)
@@ -137,53 +124,61 @@ def run_scenario(key):
 def setup_html(key):
     sc = SCENARIOS[key]
     return f"""
-    <div style="border:1px solid #1e293b;border-radius:14px;padding:16px 18px;background:#0b1220">
-      <div style="font:800 18px ui-sans-serif;color:#e2e8f0">{sc['emoji']} {sc['title']}</div>
-      <div style="font:600 11px ui-monospace,monospace;color:#64748b;letter-spacing:.5px;margin:3px 0 10px">{sc['subtitle'].upper()}</div>
-      <div style="font-size:13.5px;color:#cbd5e1;line-height:1.6">{sc['setup']}</div>
+    <div style="border:1px solid rgba(42,32,23,.12);border-radius:18px;padding:16px 18px;background:{CARD};box-shadow:0 18px 40px -28px rgba(58,36,16,.3)">
+      <div style="font-family:{BALOO};font-weight:800;font-size:19px;color:{INK}">{sc['emoji']} {sc['title']}</div>
+      <div style="font:800 11px Nunito,sans-serif;color:{GOLD};letter-spacing:.5px;margin:3px 0 10px">{sc['subtitle'].upper()}</div>
+      <div style="font-size:13.5px;color:{BODY};line-height:1.65">{sc['setup']}</div>
     </div>"""
 
 
 CSS = """
-.gradio-container {max-width: 1080px !important; margin: auto;}
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+.gradio-container {max-width: 1060px !important; margin: auto; background: #f8efe3 !important; font-family: 'Nunito', sans-serif !important;}
+body, gradio-app {background: #f8efe3 !important;}
 footer {display:none !important;}
-#hero {text-align:center; padding: 8px 0 4px;}
+#hero {text-align:center; padding: 10px 0 4px;}
+label span, .gr-form span {font-family:'Nunito',sans-serif !important;}
 #single-r, #multi-r {border:none !important; box-shadow:none !important; background:transparent !important;}
 #single-r label:has(input), #multi-r label:has(input) {
-  border:1px solid rgba(148,163,184,.22); border-radius:10px; padding:9px 12px;
-  margin:3px 0; background:rgba(255,255,255,.03); transition:all .12s;
+  border:1px solid rgba(42,32,23,.12); border-radius:14px; padding:10px 13px; margin:4px 0;
+  background:#fffdf8; transition:all .12s; font-weight:700;
 }
 #single-r label:has(input):hover, #multi-r label:has(input):hover {
-  background:rgba(16,185,129,.10); border-color:rgba(16,185,129,.45);
+  background:rgba(244,162,89,.16); border-color:rgba(244,162,89,.6);
 }
+#run-btn, #run-btn button {
+  background:#f4a259 !important; color:#3a2410 !important; border:none !important;
+  font-family:'Baloo 2',sans-serif !important; font-weight:800 !important;
+  border-radius:999px !important; box-shadow:0 14px 30px -12px rgba(244,162,89,.7) !important;
+}
+#run-btn:hover, #run-btn button:hover {background:#ef9647 !important;}
 """
 
-# The layout uses dark cards on a dark page; force dark mode so it's consistent
-# for every viewer (and the light hero/footer text stays readable).
-FORCE_DARK = """() => {
+# The layout is light/warm; force light mode so it's consistent for every viewer.
+FORCE_LIGHT = """() => {
   const url = new URL(window.location);
-  if (url.searchParams.get('__theme') !== 'dark') {
-    url.searchParams.set('__theme', 'dark');
+  if (url.searchParams.get('__theme') !== 'light') {
+    url.searchParams.set('__theme', 'light');
     window.location.replace(url.href);
   }
 }"""
 
-with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
-               css=CSS, js=FORCE_DARK, title="Certior — watch an AI agent get caught") as demo:
-    gr.HTML("""
+with gr.Blocks(theme=gr.themes.Base(primary_hue="orange", neutral_hue="stone"),
+               css=CSS, js=FORCE_LIGHT, title="Certior — watch an AI agent get caught") as demo:
+    gr.HTML(f"""
     <div id="hero">
-      <div style="font:800 30px ui-sans-serif;color:#f1f5f9">🛡️ Certior playground</div>
-      <div style="font-size:15px;color:#cbd5e1;margin-top:6px;max-width:680px;margin-inline:auto;line-height:1.5">
-        A prompt that says “don’t” is not a security boundary. <b>A capability check on the action is.</b><br>
-        Watch single-agent and multi-agents get hijacked, then watch Certior block the action with a proof.
+      <div style="font-family:{BALOO};font-weight:800;font-size:32px;color:{INK}">🛡️ Certior playground</div>
+      <div style="font-size:15px;color:{MUTED};margin-top:6px;max-width:680px;margin-inline:auto;line-height:1.55">
+        A prompt that says “don’t” is not a security boundary. <b style="color:{INK}">A capability check on the action is.</b><br>
+        Watch single-agent and multi-agent systems get hijacked, then watch Certior block the action with a proof.
       </div>
-      <div style="font:600 11px ui-monospace,monospace;color:#10b981;margin-top:8px">
+      <div style="font:800 12px Nunito,sans-serif;color:{GOLD};margin-top:8px;letter-spacing:.3px">
         zero install · no API key · every verdict computed live by Z3
       </div>
     </div>
     """)
 
-    gr.HTML("<div style='font:700 12px ui-monospace,monospace;color:#94a3b8;letter-spacing:1px;margin:10px 2px 0'>PICK AN ATTACK</div>")
+    gr.HTML(f"<div style='font:800 12px Nunito,sans-serif;color:{GOLD};letter-spacing:1px;margin:12px 2px 0'>PICK AN ATTACK</div>")
     current = gr.State("exfil")
     with gr.Row(equal_height=False):
         single_r = gr.Radio(
@@ -196,29 +191,27 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
                      (f"{SCENARIOS['webinject']['emoji']}  Web page hijacks the agent · LangChain", "webinject")],
             value=None, label="Multi-agent", elem_id="multi-r")
     setup = gr.HTML(setup_html("exfil"))
-    btn = gr.Button("▶  Run the attack", variant="primary", size="lg")
+    btn = gr.Button("▶  Run the attack", variant="primary", size="lg", elem_id="run-btn")
 
     with gr.Row(equal_height=True):
         off_col = gr.HTML(visible=False)
         on_col = gr.HTML(visible=False)
 
-    gr.HTML("""
-    <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;color:#cbd5e1;font-size:13.5px;line-height:1.6">
-      <b style="color:#f1f5f9">What just happened.</b> The model fell for the injection both times — Certior doesn’t make the model safer,
+    gr.HTML(f"""
+    <div style="margin-top:18px;border-top:1px solid rgba(42,32,23,.12);padding-top:16px;color:{BODY};font-size:13.5px;line-height:1.65">
+      <b style="color:{INK}">What just happened.</b> The model fell for the injection both times — Certior doesn’t make the model safer,
       it makes the model’s <i>actions</i> provably bounded. Z3 checks every tool call against a policy that’s
       machine-checked in Lean; allowed calls get a signed receipt an auditor can re-verify offline.
       <div style="margin-top:12px">
-        <code style="background:#020617;color:#6ee7b7;border:1px solid rgba(255,255,255,.12);padding:6px 12px;border-radius:8px;font-size:13px">pip install certior</code>
+        <code style="background:#fffdf8;color:{GOLD};border:1px solid rgba(42,32,23,.12);padding:6px 12px;border-radius:8px;font-size:13px">pip install certior</code>
         &nbsp;&nbsp;
-        <a href="https://certior.io" style="color:#6ee7b7;font-weight:600">certior.io</a> ·
-        <a href="https://docs.certior.io" style="color:#6ee7b7;font-weight:600">docs</a> ·
-        <a href="https://docs.certior.io/quickstart" style="color:#6ee7b7;font-weight:600">5-line quickstart</a>
+        <a href="https://certior.io" style="color:{GOLD};font-weight:800">certior.io</a> ·
+        <a href="https://docs.certior.io" style="color:{GOLD};font-weight:800">docs</a> ·
+        <a href="https://docs.certior.io/quickstart" style="color:{GOLD};font-weight:800">5-line quickstart</a>
       </div>
     </div>
     """)
 
-    # Two grouped radios; .input fires only on user clicks (not the programmatic
-    # clear of the other group), so selecting one deselects the other cleanly.
     def pick_single(v):
         return v, gr.update(value=None), setup_html(v), gr.update(visible=False), gr.update(visible=False)
 

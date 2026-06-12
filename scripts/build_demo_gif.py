@@ -1,233 +1,144 @@
-import os
+import os, math
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-W, H = 1000, 560
+W, H = 1080, 560
 OUT = "docs/landing/multi-agent-demo.gif"
+# game palette
+WALL2=(33,26,58); WALL1=(44,35,72); FLOOR=(58,46,87)
+INK=(245,239,230); MUTED=(185,174,208); LINE=(65,54,95)
+GOLD=(244,162,89); GREEN=(126,217,87); RED=(255,107,107)
+AGENT=(226,200,156); EYE=(32,32,58); SHADOW=(14,10,26)
 
-# palette
-NAVY_T, NAVY_B = (13, 21, 38), (8, 13, 24)
-CREAM = (248, 239, 227)
-INK = (15, 23, 42)
-SLATE = (148, 163, 184)
-DIM = (88, 101, 122)
-TEXT = (210, 219, 232)
-GREEN = (52, 211, 153)
-GREEN_S = (16, 185, 129)
-RED = (248, 113, 113)
-RED_S = (239, 68, 68)
-NODE = (18, 27, 46)
-NODE_BD = (37, 49, 73)
+UB="/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf"
+UR="/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf"
+MB="/usr/share/fonts/truetype/ubuntu/UbuntuMono-B.ttf"
+def F(p,s): return ImageFont.truetype(p,s)
+f_word=F(UB,30); f_hook=F(UB,29); f_lbl=F(UR,17); f_big=F(UB,46); f_cap=F(UR,21); f_note=F(MB,17)
+LOGO=Image.open("/home/pbour/certior-mvp/docs/landing/logo.png").convert("RGBA").resize((46,46),Image.LANCZOS)
 
+def base():
+    img=Image.new("RGB",(W,H),WALL2)
+    d=ImageDraw.Draw(img)
+    # crisp inner panel for clean depth (no soft gradients -> stays neat in GIF)
+    d.rounded_rectangle([22,22,W-22,H-22],radius=24,fill=(38,30,66),outline=(60,48,92),width=1)
+    img.paste(LOGO,(46,36),LOGO)
+    d=ImageDraw.Draw(img)
+    d.text((102,42),"Certior",font=f_word,fill=INK)
+    return img,d
 
-def F(path, size):
-    return ImageFont.truetype(path, size)
+def ctext(d,cx,y,t,f,fill):
+    bb=d.textbbox((0,0),t,font=f); d.text((cx-(bb[2]-bb[0])/2,y),t,font=f,fill=fill)
 
+def glow(img,fn,blur=9):
+    L=Image.new("RGBA",img.size,(0,0,0,0)); fn(ImageDraw.Draw(L))
+    return Image.alpha_composite(img.convert("RGBA"),L.filter(ImageFilter.GaussianBlur(blur))).convert("RGB")
 
-DV = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-DVB = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-MONO = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf"
-f_word = F(DVB, 26)
-f_tag = F(DV, 14)
-f_scn = F(MONO, 15)
-f_node = F(DVB, 17)
-f_sub = F(DV, 12)
-f_chip = F(MONO, 15)
-f_ban = F(DVB, 30)
-f_cap = F(DV, 18)
-f_small = F(MONO, 13)
+def pill(d,cx,y,t,f,fg):
+    bb=d.textbbox((0,0),t,font=f); w=(bb[2]-bb[0])+22
+    d.rounded_rectangle([cx-w/2,y-3,cx+w/2,y+24],radius=999,fill=(0,0,0,90) if False else (22,16,40))
+    ctext(d,cx,y,t,f,fg)
 
+def blob(d,cx,cy,color):
+    w,h,r=78,74,28; l,t,rr,b=cx-w/2,cy-h/2,cx+w/2,cy+h/2
+    d.rounded_rectangle([l,t+9,rr,b+9],radius=r,fill=SHADOW)          # drop shadow
+    d.rounded_rectangle([l,t,rr,b],radius=r,fill=color)               # body
+    d.rounded_rectangle([l+7,t+5,rr-7,t+22],radius=12,fill=tuple(min(255,c+22) for c in color)) # sheen
+    for ex in (cx-15,cx+15):                                          # eyes
+        d.ellipse([ex-7,cy-10,ex+6,cy+6],fill=EYE)
+        d.ellipse([ex+1,cy-7,ex+5,cy-3],fill=(255,255,255))
 
-def gradient_bg():
-    # flat background: crisper and far smaller as a GIF than a gradient
-    return Image.new("RGB", (W, H), (10, 16, 30))
+def note(d,cx,cy):
+    w,h=86,96; l,t,r,b=cx-w/2,cy-h/2,cx+w/2,cy+h/2
+    d.rounded_rectangle([l,t+8,r,b+8],radius=12,fill=SHADOW)
+    d.rounded_rectangle([l,t,r,b],radius=12,fill=(247,238,224),outline=RED,width=3)
+    d.polygon([(r-16,t),(r,t),(r,t+16)],fill=(206,196,176))
+    for i,yy in enumerate(range(int(t)+22,int(b)-10,13)):
+        col=RED if i==2 else (150,140,125); d.line([l+12,yy,(r-14 if i%2 else r-24),yy],fill=col,width=3)
 
+def shield(d,cx,cy,active):
+    s=1.0; pts=[(cx,cy-44*s),(cx+34*s,cy-30*s),(cx+34*s,cy+9*s),(cx,cy+46*s),(cx-34*s,cy+9*s),(cx-34*s,cy-30*s)]
+    d.polygon([(p[0],p[1]+8) for p in pts],fill=SHADOW)
+    col=GREEN if active else GOLD
+    d.polygon(pts,fill=(28,52,30) if active else (60,46,30),outline=col,width=4)
+    if active:
+        d.line([cx-14,cy,cx-3,cy+13],fill=GREEN,width=6); d.line([cx-3,cy+13,cx+16,cy-13],fill=GREEN,width=6)
 
-def ctext(d, cx, y, text, font, fill):
-    bb = d.textbbox((0, 0), text, font=font)
-    d.text((cx - (bb[2] - bb[0]) / 2, y), text, font=font, fill=fill)
+def database(d,cx,cy,state):
+    w,h,e=86,80,22; l,r,t,b=cx-w/2,cx+w/2,cy-h/2,cy+h/2
+    col=RED if state=="dropped" else (GREEN if state=="safe" else GOLD)
+    fill=(70,28,30) if state=="dropped" else ((26,52,30) if state=="safe" else (52,40,26))
+    d.rounded_rectangle([l,b-e+9,r,b+9],radius=8,fill=SHADOW)
+    d.rectangle([l,t+e/2,r,b-e/2],fill=fill)
+    d.line([l,t+e/2,l,b-e/2],fill=col,width=3); d.line([r,t+e/2,r,b-e/2],fill=col,width=3)
+    d.arc([l,b-e,r,b],0,180,fill=col,width=3)
+    for yy in (cy-6,cy+16): d.ellipse([l,yy,r,yy+e],outline=col,width=2)
+    d.ellipse([l,t,r,t+e],fill=fill,outline=col,width=3)
 
+def arrow(d,x1,x2,y,color,dash=False):
+    if dash:
+        x=x1
+        while x<x2-12: d.line([x,y,min(x+10,x2-12),y],fill=color,width=4); x+=20
+    else: d.line([x1,y,x2-12,y],fill=color,width=4)
+    d.polygon([(x2,y),(x2-13,y-7),(x2-13,y+7)],fill=color)
 
-def glow_layer(draw_fn):
-    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    draw_fn(ImageDraw.Draw(layer))
-    return layer.filter(ImageFilter.GaussianBlur(10))
+ROW=250
+WEB=(165,ROW); A1=(388,ROW); A2=(476,ROW); CREW=(432,ROW); GATE=(720,ROW); DB=(940,ROW)
 
-
-def shield_pts(cx, cy, s=1.0):
-    return [(cx, cy - 40 * s), (cx + 31 * s, cy - 27 * s), (cx + 31 * s, cy + 8 * s),
-            (cx, cy + 42 * s), (cx - 31 * s, cy + 8 * s), (cx - 31 * s, cy - 27 * s)]
-
-
-def database(d, cx, cy, color, fill):
-    w, h, eh = 70, 64, 18
-    l, r, t, b = cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2
-    d.rectangle([l, t + eh / 2, r, b - eh / 2], fill=fill)
-    for yy in (t, cy - 8, cy + 14):
-        d.ellipse([l, yy, r, yy + eh], outline=color, width=2,
-                  fill=fill if yy != t else fill)
-    d.ellipse([l, t, r, t + eh], outline=color, width=2, fill=fill)
-    d.line([l, t + eh / 2, l, b - eh / 2], fill=color, width=2)
-    d.line([r, t + eh / 2, r, b - eh / 2], fill=color, width=2)
-    d.arc([l, b - eh, r, b], 0, 180, fill=color, width=2)
-
-
-def node(d, cx, cy, w, h, title, subs, accent):
-    l, t, r, b = cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2
-    d.rounded_rectangle([l, t, r, b], radius=14, fill=NODE, outline=NODE_BD, width=1)
-    d.rounded_rectangle([l, t, l + 5, b], radius=2, fill=accent)
-    ctext(d, cx, t + 16, title, f_node, TEXT)
-    yy = t + 44
-    for s, col in subs:
-        ctext(d, cx, yy, s, f_sub, col)
-        yy += 18
-
-
-def page_icon(d, cx, cy):
-    l, t, r, b = cx - 26, cy - 32, cx + 26, cy + 32
-    d.rounded_rectangle([l, t, r, b], radius=6, fill=(30, 41, 59), outline=SLATE, width=2)
-    for i, yy in enumerate(range(int(t) + 12, int(b) - 6, 11)):
-        ln = r - 10 if i % 2 else r - 18
-        col = RED if i == 2 else DIM
-        d.line([l + 9, yy, ln, yy], fill=col, width=3)
-
-
-def chip(d, cx, cy, text, fg, bg):
-    bb = d.textbbox((0, 0), text, font=f_chip)
-    w = (bb[2] - bb[0]) + 24
-    d.rounded_rectangle([cx - w / 2, cy - 15, cx + w / 2, cy + 15], radius=9, fill=bg,
-                        outline=fg, width=1)
-    ctext(d, cx, cy - 9, text, f_chip, fg)
-    return w
-
-
-def connector(d, x1, x2, y, color, dashed=False):
-    if dashed:
-        x = x1
-        while x < x2 - 8:
-            d.line([x, y, min(x + 8, x2 - 8), y], fill=color, width=2)
-            x += 16
-    else:
-        d.line([x1, y, x2 - 8, y], fill=color, width=2)
-    d.polygon([(x2, y), (x2 - 9, y - 5), (x2 - 9, y + 5)], fill=color)
-
-
-# layout
-PAGE = (150, 280)
-CREW = (430, 280)
-GATE = (660, 280)
-DB = (850, 280)
-
-
-def header(img, d):
-    # shield logo + wordmark
-    sx, sy = 52, 46
-    d.polygon(shield_pts(sx, sy, 0.42), fill=GREEN_S)
-    d.text((78, 32), "Certior", font=f_word, fill=CREAM)
-    d.text((80, 64), "a capability boundary for AI agents", font=f_tag, fill=DIM)
-    t = "LangChain  ·  multi-agent  ·  GPT-4o"
-    bb = d.textbbox((0, 0), t, font=f_scn)
-    d.text((W - 52 - (bb[2] - bb[0]), 50), t, font=f_scn, fill=SLATE)
-    d.line([52, 92, W - 52, 92], fill=(28, 38, 58), width=1)
-
-
-def scene(payload_x=None, payload_kind="attack", gate=None, db="normal",
-          banner=None, caption=None, dim_payload=False):
-    img = gradient_bg()
-
-    # glow passes
-    if gate == "active":
-        img = Image.alpha_composite(img.convert("RGBA"),
-            glow_layer(lambda g: g.polygon(shield_pts(*GATE), fill=(16, 185, 129, 180)))).convert("RGB")
-    if db == "dropped":
-        img = Image.alpha_composite(img.convert("RGBA"),
-            glow_layer(lambda g: g.ellipse([DB[0]-45, DB[1]-45, DB[0]+45, DB[1]+45], fill=(239,68,68,150)))).convert("RGB")
-    if payload_x is not None and not dim_payload:
-        col = (239, 68, 68, 130) if payload_kind == "attack" else (52, 211, 153, 130)
-        px = payload_x
-        img = Image.alpha_composite(img.convert("RGBA"),
-            glow_layer(lambda g: g.ellipse([px-30, 232, px+30, 292], fill=col))).convert("RGB")
-
-    d = ImageDraw.Draw(img)
-    header(img, d)
-
+def scene(phase, db="normal", big=None, cap=None, hook=None, bob=0.0, chip=None):
+    img,_=base(); gate=phase=="with"
+    if gate=="with" or phase=="with":
+        img=glow(img,lambda g:g.polygon([(GATE[0],ROW-44),(GATE[0]+34,ROW-30),(GATE[0]+34,ROW+9),(GATE[0],ROW+46),(GATE[0]-34,ROW+9),(GATE[0]-34,ROW-30)],fill=(126,217,87,150)))
+    if db=="dropped":
+        img=glow(img,lambda g:g.ellipse([DB[0]-55,ROW-55,DB[0]+55,ROW+55],fill=(255,107,107,140)))
+    d=ImageDraw.Draw(img)
     # connectors
-    connector(d, PAGE[0] + 60, CREW[0] - 95, 280, (60, 74, 100))
-    connector(d, CREW[0] + 95, GATE[0] - 36, 280, (60, 74, 100))
-    gate_col = GREEN if gate == "active" else (60, 74, 100)
-    connector(d, GATE[0] + 36, DB[0] - 42, 280,
-              RED_S if db == "dropped" else gate_col,
-              dashed=(gate == "active"))
-
-    # nodes
-    page_icon(d, *PAGE)
-    ctext(d, PAGE[0], PAGE[1] + 40, "Untrusted web page", f_sub, SLATE)
-    node(d, CREW[0], CREW[1], 190, 110, "Agent crew",
-         [("Researcher  →  Operator", SLATE), ("LangChain", DIM)], (96, 165, 250))
-
-    # gate / shield
+    arrow(d,WEB[0]+52,CREW[0]-100,ROW,LINE)
     if gate:
-        gc = GREEN if gate == "active" else DIM
-        d.polygon(shield_pts(*GATE), outline=gc, width=3,
-                  fill=(12, 40, 30) if gate == "active" else None)
-        if gate == "active":
-            cx, cy = GATE
-            d.line([cx - 12, cy, cx - 3, cy + 11], fill=GREEN, width=4)
-            d.line([cx - 3, cy + 11, cx + 14, cy - 12], fill=GREEN, width=4)
-        ctext(d, GATE[0], GATE[1] + 48, "Certior", f_sub, gc)
-
-    # database
-    dbc = RED if db == "dropped" else (GREEN if db == "safe" else SLATE)
-    database(d, DB[0], DB[1], dbc, (40, 18, 22) if db == "dropped" else NODE)
-    lbl = "DROPPED" if db == "dropped" else ("intact" if db == "safe" else "production DB")
-    ctext(d, DB[0], DB[1] + 44, lbl, f_sub, dbc)
-
-    # payload chip traveling
-    if payload_x is not None:
-        fg, bg = ((RED, (40, 18, 22)) if payload_kind == "attack" else (GREEN, (12, 40, 30)))
-        chip(d, payload_x, 262, "DROP TABLE orders;", fg, bg)
-
-    # banner
-    if banner:
-        text, fg, bg = banner
-        by = 446
-        d.rounded_rectangle([52, by, W - 52, by + 56], radius=12, fill=bg)
-        ctext(d, W / 2, by + 13, text, f_ban, fg)
-
-    # caption
-    if caption:
-        ctext(d, W / 2, 510, caption[0], f_cap, caption[1])
-
+        arrow(d,CREW[0]+100,GATE[0]-46,ROW,LINE)
+        arrow(d,GATE[0]+46,DB[0]-54,ROW,GREEN if db=="safe" else LINE,dash=True)
+    else:
+        arrow(d,CREW[0]+100,DB[0]-54,ROW,RED if db=="dropped" else LINE)
+    # actors
+    note(d,*WEB); pill(d,WEB[0],ROW+58,"web page",f_lbl,MUTED)
+    blob(d,A1[0],A1[1]+bob,AGENT); blob(d,A2[0],A2[1]-bob,AGENT); pill(d,CREW[0],ROW+58,"2 AI agents",f_lbl,MUTED)
+    if gate: shield(d,*GATE,True); pill(d,GATE[0],ROW+62,"Certior",f_lbl,GREEN)
+    database(d,*DB,db); pill(d,DB[0],ROW+56,"database",f_lbl,RED if db=="dropped" else (GREEN if db=="safe" else MUTED))
+    if chip is not None:
+        cx,ccol=chip; txt="DROP TABLE"; bb=d.textbbox((0,0),txt,font=f_note); w=(bb[2]-bb[0])+22; cy=ROW-60
+        d.rounded_rectangle([cx-w/2,cy-15,cx+w/2,cy+15],radius=10,fill=(58,20,24),outline=ccol,width=2)
+        ctext(d,cx,cy-9,txt,f_note,ccol)
+    if hook: ctext(d,W/2,118,hook[0],f_hook,INK)
+    if big: ctext(d,W/2,418,big[0],f_big,big[1])
+    if cap: ctext(d,W/2,482,cap[0],f_cap,cap[1])
     return img
 
+frames,durs=[],[]
+def add(im,ms): frames.append(im); durs.append(ms)
 
-frames, durs = [], []
-def add(img, ms): frames.append(img); durs.append(ms)
+HOOK=("A web page tells two AI agents to wipe the database.",INK)
+def bobv(i): return math.sin(i*0.85)*4.0
+i=0
+# WITHOUT — establish with gentle bob
+for _ in range(3):
+    add(scene("without",bob=bobv(i),hook=HOOK,cap=("with no boundary, they just do it…",MUTED)),300); i+=1
+# malicious chip slides web -> database
+for x in range(WEB[0]+30, DB[0]-30, 72):
+    add(scene("without",bob=bobv(i),chip=(x,RED),cap=("WITHOUT CERTIOR",RED)),120); i+=1
+# dropped (hold)
+add(scene("without",bob=bobv(i),db="dropped",big=("Database dropped",RED),cap=("the web page hijacked the agents",RED)),2300); i+=1
+# WITH — shield appears
+for _ in range(2):
+    add(scene("with",bob=bobv(i),cap=("now put Certior between the agents and the data",GREEN)),450); i+=1
+# chip slides toward the shield and stops
+for x in range(CREW[0]+90, GATE[0]-110, 42):
+    add(scene("with",bob=bobv(i),chip=(x,RED),cap=("WITH CERTIOR",GREEN)),140); i+=1
+# blocked (hold)
+add(scene("with",bob=bobv(i),chip=(GATE[0]-112,RED),db="safe",big=("Blocked",GREEN),cap=("the agents only have db:read — the drop never runs",GREEN)),2500)
 
-TAG = ("A prompt can’t stop this. A capability check can.", SLATE)
-
-# 1 setup
-add(scene(caption=TAG), 1100)
-# 2-4 attack travels (no gate)
-for x in (300, 430, 560):
-    add(scene(payload_x=x, caption=TAG), 650)
-# 5 reaches DB unguarded
-add(scene(payload_x=700, caption=("WITHOUT CERTIOR", RED)), 500)
-# 6 dropped
-add(scene(db="dropped", banner=("DATABASE  DROPPED", RED, (46, 16, 20)),
-          caption=("a web page just dropped your production database", RED)), 2300)
-# 7 the turn: shield slides in
-add(scene(gate="idle", caption=("…now turn Certior on", GREEN)), 700)
-# 8-9 attack travels into the shield
-add(scene(payload_x=520, gate="active", caption=("WITH CERTIOR", GREEN)), 650)
-add(scene(payload_x=600, gate="active", caption=("WITH CERTIOR", GREEN)), 650)
-# 10 blocked at the gate, db safe
-add(scene(payload_x=612, gate="active", db="safe",
-          banner=("CertiorBlocked  ·  needs db:admin", GREEN, (10, 34, 26)),
-          caption=("the agent holds db:read — the drop never runs", GREEN)), 2600)
-
-master = max(frames, key=lambda im: len(im.getcolors(1 << 24) or [1] * 999)).convert(
-    "P", palette=Image.ADAPTIVE, colors=128)
-fp = [f.quantize(palette=master, dither=Image.NONE) for f in frames]
-fp[0].save(OUT, save_all=True, append_images=fp[1:], duration=durs, loop=0,
-           disposal=2, optimize=True)
-print("wrote", OUT, "frames", len(frames), "size", os.path.getsize(OUT) // 1024, "KB")
+# build ONE palette from ALL frames so reds and greens both survive quantization
+montage=Image.new("RGB",(W,H*len(frames)))
+for i,f in enumerate(frames): montage.paste(f,(0,i*H))
+master=montage.convert("P",palette=Image.ADAPTIVE,colors=256)
+fp=[f.quantize(palette=master,dither=Image.NONE) for f in frames]
+fp[0].save(OUT,save_all=True,append_images=fp[1:],duration=durs,loop=0,disposal=2,optimize=True)
+print("wrote",OUT,"frames",len(frames),"size",os.path.getsize(OUT)//1024,"KB")
