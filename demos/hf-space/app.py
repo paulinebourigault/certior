@@ -190,7 +190,7 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
             choices=[(f"{SCENARIOS['exfil']['emoji']}  Patient-data exfiltration", "exfil"),
                      (f"{SCENARIOS['sox']['emoji']}  Invoice fraud · SOX $480k", "sox"),
                      (f"{SCENARIOS['runaway']['emoji']}  Runaway budget blowout", "runaway")],
-            value="exfil", label="Single-agent · OpenAI", elem_id="single-r")
+            value="exfil", label="Single-agent", elem_id="single-r")
         multi_r = gr.Radio(
             choices=[(f"{SCENARIOS['deleg']['emoji']}  Delegation escalation · CrewAI", "deleg"),
                      (f"{SCENARIOS['webinject']['emoji']}  Web page hijacks the agent · LangChain", "webinject")],
