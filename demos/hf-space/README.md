@@ -8,7 +8,7 @@ sdk_version: 4.44.0
 app_file: app.py
 pinned: true
 license: apache-2.0
-short_description: Watch an AI agent get prompt-injected, then caught with a proof.
+short_description: Watch an AI agent get caught, with a proof.
 ---
 
 # Certior playground
