@@ -25,9 +25,9 @@ Create a new user account and receive an API key.
 
 ```json
 {
-  "user_id":  "...",
+  "id":       "...",
   "email":    "demo@example.com",
-  "api_key":  "ck_..."
+  "api_key":  "ck-..."
 }
 ```
 
@@ -57,7 +57,7 @@ Authorization: Bearer <current-api-key>
 **Response** (`RotateKeyResponse`):
 
 ```json
-{ "api_key": "ck_new..." }
+{ "api_key": "ck-new..." }
 ```
 
 ## `GET /auth/me`
@@ -73,20 +73,16 @@ Authorization: Bearer <api-key>
 
 ```json
 {
-  "user_id": "...",
-  "email":   "demo@example.com",
-  "name":    "Demo User",
-  "roles":   ["VIEWER"]
+  "id":    "...",
+  "email": "demo@example.com",
+  "name":  "Demo User",
+  "role":  "VIEWER"
 }
 ```
 
 ## Roles
 
 The codebase recognises `ADMIN`, `OPERATOR`, `APPROVER`, `AUDITOR`, `VIEWER`, and `POLICY_AUTHOR`. Endpoints that require a specific role declare it via the `require_role(...)` dependency - see the per-endpoint docs.
-
-## `DELETE /auth/users/{user_id}`
-
-Admin-only. Deletes a user. Requires the calling user's role to include `ADMIN`.
 
 ## See also
 

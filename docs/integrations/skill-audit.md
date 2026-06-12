@@ -69,12 +69,15 @@ Emits per-skill audit results as JSON for machine consumption.
 The CLI is a thin wrapper over `certior.adapters.openclaw_skill_audit`:
 
 ```python
+from certior import Guard
 from certior.adapters.openclaw_skill_audit import audit_skill, audit_skills_dir
 
-result = audit_skill("skills/researcher/SKILL.md", permissions=["network:http:read"])
-print(result.ok, result.reason)
+parent = Guard(permissions=["network:http:read"])
 
-all_results = audit_skills_dir("skills/", permissions=["network:http:read"])
+result = audit_skill("skills/researcher/SKILL.md", parent_guard=parent)
+print(result.passed, result.reasons)
+
+all_results = audit_skills_dir("skills/", parent_guard=parent)
 ```
 
 Each result carries the skill name, the declared capability set, the verdict, the reason on failure, and the skill fingerprint.

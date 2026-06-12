@@ -12,7 +12,7 @@ The route files are [`app/api/routes/releases.py`](https://github.com/paulinebou
 Return the release decision for a specific commit.
 
 ```http
-GET /api/v1/releases/decision?repo=my-org/my-repo&commit=abc123...
+GET /api/v1/releases/decision?repo_root=my-org/my-repo&commit_sha=abc123...
 Authorization: Bearer <api-key>
 ```
 
@@ -52,7 +52,7 @@ List the history of promotions for the current scope. Same role list as `/decisi
 
 The webhook endpoint for the [Certior GitHub Action](/integrations/github-action). GitHub POSTs pull-request and check-run events here; the server posts decision summaries back to the PR.
 
-The server validates the GitHub webhook signature using a shared secret configured via the `GITHUB_WEBHOOK_SECRET` env var.
+The handler filters on event type and action. Note: HMAC signature verification of the webhook is **not yet enforced** — restrict the endpoint at the network layer (or in front of it) until it is.
 
 ## `GET /trust/badge`
 

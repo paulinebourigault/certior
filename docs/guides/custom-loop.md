@@ -41,7 +41,6 @@ else:
 @guard.wrap(required_capabilities=["network:http:read"], cost_cents=10)
 def web_fetch(url: str) -> str: ...
 
-# Either of these are equivalent:
 html = web_fetch("https://example.com")          # raises CertiorBlocked on block
 ```
 

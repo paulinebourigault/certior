@@ -17,14 +17,14 @@ pip install certior
 
 This pulls in `z3-solver`, `httpx`, `pydantic`, `jsonschema`, and `PyYAML`. Requires Python 3.11+.
 
-Every tool call is enforced by Z3 against a policy model proven sound in Lean 4 offline. For *live* lattice-proven flow verification on every call, add the Lean binary (not bundled in the wheel; Linux x86_64 / macOS arm64):
+Every tool call is enforced by Z3 against a policy model proven sound in Lean 4 offline — that is the always-on SDK path. The optional Lean binary adds *server-side* plan verification (used by Certior's plan-verification endpoint, not the per-call SDK `Guard.verify()`); install it with (not bundled in the wheel; Linux x86_64 / macOS arm64):
 
 ```bash
 pip install "certior[lean]"
 certior-install-lean   # downloads + SHA-256-verifies the binary, fails closed on mismatch
 ```
 
-This step is optional - without it the runtime stays on the always-on Z3 path. See [Live Lean verification](/reference/lean-binary).
+This step is optional - the SDK runtime stays on the always-on Z3 path either way. See [Lean verification](/reference/lean-binary).
 
 ## 2. Declare a Guard
 

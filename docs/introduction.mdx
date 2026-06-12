@@ -1,6 +1,6 @@
 ---
 title: "Certior"
-description: "A capability boundary for multi-agent AI - every tool call is checked against a Lean-proven policy before it runs."
+description: "A capability boundary for multi-agent AI - every tool call is checked by Z3 against a policy model machine-checked in Lean, before it runs."
 ---
 
 ## What Certior is
@@ -15,7 +15,7 @@ Allowed calls return a signed certificate. Blocked calls raise `CertiorBlocked` 
 
 ## What is proven
 
-The policy model the gate enforces is machine-checked in Lean 4: 155 theorems and lemmas, 0 `sorry`, 0 axioms beyond Lean's three standard ones (`propext`, `Classical.choice`, `Quot.sound`). CI fails the build if any of the four headline guarantees - `delegationSafety`, `ifcSoundness`, `compositionSoundness`, and `SecurityLevel.isValidBoundedLattice` - stops depending only on standard axioms.
+The policy model the gate enforces is machine-checked in Lean 4: 150+ theorems and lemmas, 0 `sorry`, 0 axioms beyond Lean's three standard ones (`propext`, `Classical.choice`, `Quot.sound`). CI fails the build if any of the four headline guarantees - `delegationSafety`, `ifcSoundness`, `compositionSoundness`, and `SecurityLevel.isValidBoundedLattice` - stops depending only on standard axioms.
 
 What Certior does not claim: it does not verify the LLM's behaviour. It verifies the boundary the LLM operates inside.
 

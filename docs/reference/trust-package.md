@@ -14,7 +14,7 @@ When Certior issues an **allowed verdict** with a `VerifiedCertificate`, it prov
 - **Capability containment.** The required capabilities are a subset of the agent's permissions, encoded and discharged in Z3.
 - **Subset delegation.** A child guard's permissions are a subset of the parent's. The general statement is proved in `lean4/CertiorLattice/Certior/Delegation.lean`; the per-call instance is discharged by Z3 against the active token.
 - **Budget sufficiency.** `cost_cents ≤ budget_remaining`. Same encoding.
-- **Information-flow soundness.** Routing across labelled domains follows the lattice. Proved in `Lattice.lean` and `Composition.lean`.
+- **Information-flow soundness (model-level).** The labelled-domain lattice the policy is built on is proven sound offline in `Lattice.lean` and `Composition.lean`, and the certificate is bound to that proven model by fingerprint. Per call, Z3 discharges capability and budget; the flow-soundness guarantee comes from the proven model, not a separate per-call check.
 - **Lineage.** The certificate carries the plan hash and the policy fingerprint. An auditor can reproduce the verdict against the exact source at the exact commit.
 
 The four headline theorems audited in CI are `Certior.Delegation.delegationSafety`, `Certior.Encoding.ifcSoundness`, `Certior.Composition.compositionSoundness`, and `SecurityLevel.isValidBoundedLattice`. `lean4/CertiorLattice/Certior/Audit.lean` runs `#print axioms` against each and fails the build if any of them depends on anything beyond Lean's three standard axioms (`propext`, `Classical.choice`, `Quot.sound`). If any of them stops being independent of bespoke axioms, the build fails and the trust package is no longer issuable.

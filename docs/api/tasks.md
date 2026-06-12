@@ -81,7 +81,7 @@ The `websocket_url` streams events as the task runs: tool calls, verify decision
 1. The request is validated against the active compliance policy's `max_permissions` ceiling.
 2. An execution record is created and the task is enqueued.
 3. The agentic executor (LLM + tool dispatcher) starts running. Every tool call passes through `Guard.verify(...)` before execution. Allowed calls produce a `VerifiedCertificate` recorded in the execution; blocked calls are recorded with their violations.
-4. The execution finishes with a status of `succeeded`, `blocked`, `error`, or `cancelled`.
+4. The execution moves through `queued` → `planning` → `executing` → `verifying` and finishes with `completed`, `failed`, or `cancelled`.
 
 ## See also
 

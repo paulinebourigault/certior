@@ -4,9 +4,13 @@
   "name": "Certior",
   "description": "A capability boundary for multi-agent AI. Every tool call is checked against a Lean-proven policy before it runs.",
   "colors": {
-    "primary": "#0F172A",
-    "light": "#F8EFE3",
-    "dark": "#0F172A"
+    "primary": "#C77D32",
+    "light": "#F4A259",
+    "dark": "#B56B2A"
+  },
+  "fonts": {
+    "heading": { "family": "Baloo 2" },
+    "body": { "family": "Nunito" }
   },
   "favicon": "/favicon.png",
   "navigation": {

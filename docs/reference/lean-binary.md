@@ -53,7 +53,7 @@ export CERTIOR_FLOW_CHECK_BINARY=lean4/CertiorPlan/.lake/build/bin/certior-flow-
 ./run.sh
 ```
 
-The runtime resolves the binary in order: `CERTIOR_FLOW_CHECK_BINARY` -> the `certior-install-lean` cache (`~/.cache/certior/bin/`) -> a local `lake` build -> `PATH`. When a binary is found and executable, the runtime invokes it on every verify call alongside Z3. Allowed calls then carry a dual-prover certificate (Z3 + Lean). When the variable is unset or the binary is missing, the runtime degrades to Z3-only mode rather than refusing to start.
+The binary is resolved in order: `CERTIOR_FLOW_CHECK_BINARY` -> the `certior-install-lean` cache (`~/.cache/certior/bin/`) -> a local `lake` build -> `PATH`. When a binary is found and executable, Certior's **server-side plan-verification** endpoint uses it to machine-check submitted plans against the Lean model. The per-call SDK path (`Guard.verify()`) stays Z3-only — Lean's role there is the offline source fingerprint carried in every certificate, re-checkable with `lake build`. When the variable is unset or the binary is missing, plan verification degrades gracefully rather than refusing to start.
 
 The OS support matrix mirrors the Lean 4 toolchain: Linux x86_64 and macOS arm64 are tested by the [`lean-binary-ci.yml`](https://github.com/paulinebourigault/certior/blob/main/.github/workflows/lean-binary-ci.yml) workflow. Windows runs through WSL.
 

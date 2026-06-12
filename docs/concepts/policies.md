@@ -52,7 +52,7 @@ class ComplianceConfig:
     required_proofs: list[str]               # obligations Z3 must discharge
 ```
 
-When you set `policy="hipaa"`, Guard builds a `_safety_policy` from that config and the scanner is bound to its rules. The `max_permissions` ceiling overrides any wider `permissions=` argument you pass.
+When you set `policy="hipaa"`, Guard builds a `_safety_policy` from that config and the scanner is bound to its rules. The `max_permissions` ceiling shown above is the *server-side* enforcement boundary (the Cloud task API intersects requested permissions against it). The local SDK `Guard` uses the `permissions=` you pass as-is — pass a set that already fits the ceiling you intend to enforce.
 
 ## Custom policies
 

@@ -1,6 +1,6 @@
 ---
 title: "Configuration"
-description: "Guard constructor parameters, environment variables, and the one env var you set to enable live Lean flow verification."
+description: "Guard constructor parameters, environment variables, and the env var that enables server-side Lean plan verification."
 ---
 
 There are two configuration surfaces: the `Guard` constructor (per-agent, code-level) and environment variables (server-level).
@@ -29,8 +29,8 @@ Three formal tools, three jobs - all driven by the same Guard configuration:
 | Tool | When it runs | Configured by |
 |---|---|---|
 | **Z3** (SMT) | Every `verify(...)` call (~tens of ms). | Built into the runtime. No separate env var. |
-| **Lean 4** | Offline / CI on every commit. Optional live flow checker when the binary is present. | `certior-install-lean` (auto-discovered) or `CERTIOR_FLOW_CHECK_BINARY` for a source build. See [Lean binary](/reference/lean-binary). |
-| **Dafny** | Offline / CI. | Built into the runtime modules and export path. No env var toggle. |
+| **Lean 4** | Offline / CI. Optional **server-side plan verification** when the binary is present — not the per-call SDK path. | `certior-install-lean` (auto-discovered) or `CERTIOR_FLOW_CHECK_BINARY` for a source build. See [Lean binary](/reference/lean-binary). |
+| **Dafny** | Offline / CI only. | The runtime carries only the Dafny-derived Python invariants; the Dafny binary is not invoked at runtime. No env var toggle. |
 
 When the Lean live binary is not configured, the runtime uses the Python implementation of the same subset/budget rule whose soundness Lean has proven offline.
 

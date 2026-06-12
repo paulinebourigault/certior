@@ -63,7 +63,7 @@ If `permissions` includes `"*"`, the capability gate trusts the call and only th
 
 ## What gets recorded
 
-Every verify call (allowed or blocked) appends to `guard.audit_log` with the tool name, the requested capabilities, the verdict, and (for allowed calls) the issued certificate. Blocked calls record the violations list.
+Every verify call (allowed or blocked) appends a compact record to `guard.audit_log`: the tool name, the `allowed` verdict, the violation count, the PII count, the call latency, and a timestamp. The full certificate and the detailed violation list live on the returned `VerifyResult`, not in the audit-log entry.
 
 ## See also
 
