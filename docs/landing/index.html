@@ -34,7 +34,6 @@
   <div class="flex items-center gap-6 text-sm">
     <a href="#try" class="hover:underline">Playground</a>
     <a href="#how-it-works" class="hover:underline">How it works</a>
-    <a href="#why-now" class="hover:underline">Why now</a>
     <a href="https://docs.certior.io" class="hover:underline">Docs</a>
     <a href="#design-partner" class="hidden sm:inline-block px-3.5 py-1.5 rounded-md text-sm font-medium hover:opacity-90 transition" style="background-color: #0f172a; color: #f8efe3;">Design partner</a>
   </div>
@@ -42,7 +41,7 @@
 
 <!-- hero -->
 <section class="max-w-6xl mx-auto px-6 pt-10 pb-20">
-  <div class="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+  <div class="max-w-2xl">
 
     <!-- left: claim + code + install -->
     <div>
@@ -63,7 +62,7 @@
         </a>
         <a href="https://docs.certior.io/quickstart" class="text-sm font-medium text-slate-600 hover:text-ink underline">or the 5-line quickstart</a>
       </div>
-      <p class="text-sm text-slate-600 mb-8">Watch a real GPT-4o agent get prompt-injected into leaking patient records — then blocked, with a signed proof.</p>
+      <p class="text-sm text-slate-600 mb-8">Watch single-agent and multi-agent systems get hijacked — then blocked, with a signed proof.</p>
 
       <!-- code shape -->
       <div class="rounded-xl p-5 mb-6 shadow-sm overflow-x-auto" style="background-color: #0f172a;">
@@ -89,65 +88,6 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
       <p class="text-xs text-slate-500">Live on <a href="https://pypi.org/project/certior/" class="underline hover:text-ink">PyPI</a>, try it in the <a href="https://huggingface.co/spaces/paulibo/certior-playground" class="underline hover:text-ink">playground</a>, full walkthrough in the <a href="https://docs.certior.io/quickstart" class="underline hover:text-ink">quickstart</a>.</p>
     </div>
 
-    <!-- right: hero visual -->
-    <div class="lg:pl-4">
-      <svg viewBox="0 0 500 520" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto max-w-md mx-auto lg:max-w-none" role="img" aria-label="A tool call from any agent enters the Certior gate, which checks capability subset (proven in Lean), content policy, and budget. Allowed calls return a signed receipt bound to the policy fingerprint; blocked calls raise CertiorBlocked with a precise reason.">
-        <defs>
-          <marker id="hv-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#0f172a" />
-          </marker>
-          <marker id="hv-arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#10b981" />
-          </marker>
-          <marker id="hv-arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#dc2626" />
-          </marker>
-        </defs>
-
-        <!-- step 1: tool call -->
-        <rect x="70" y="8" width="360" height="84" rx="10" fill="#fff" stroke="#0f172a" stroke-width="1.4"/>
-        <text x="250" y="34" text-anchor="middle" font-size="10.5" fill="#64748b" font-family="ui-monospace,monospace" letter-spacing="1.2">TOOL CALL FROM ANY AGENT</text>
-        <text x="250" y="60" text-anchor="middle" font-size="15" font-weight="600" fill="#0f172a" font-family="ui-monospace,monospace">web_fetch("https://...")</text>
-        <text x="250" y="80" text-anchor="middle" font-size="11" fill="#64748b">OpenClaw, LangChain, CrewAI, custom</text>
-
-        <line x1="250" y1="102" x2="250" y2="142" stroke="#0f172a" stroke-width="1.8" marker-end="url(#hv-arrow)"/>
-
-        <!-- step 2: gate -->
-        <rect x="40" y="152" width="420" height="190" rx="10" fill="#0f172a"/>
-        <text x="250" y="180" text-anchor="middle" font-size="10.5" fill="#94a3b8" font-family="ui-monospace,monospace" letter-spacing="1.2">CERTIOR GATE / Z3 ENFORCES, LEAN PROVES</text>
-
-        <text x="70" y="218" font-size="14" fill="#f8efe3" font-family="ui-sans-serif,system-ui">•</text>
-        <text x="92" y="218" font-size="14" font-weight="600" fill="#f8efe3" font-family="ui-sans-serif,system-ui">Capability subset</text>
-        <text x="92" y="236" font-size="11" fill="#94a3b8" font-family="ui-sans-serif,system-ui">a child can never escalate beyond its parent</text>
-
-        <text x="70" y="266" font-size="14" fill="#f8efe3" font-family="ui-sans-serif,system-ui">•</text>
-        <text x="92" y="266" font-size="14" font-weight="600" fill="#f8efe3" font-family="ui-sans-serif,system-ui">Content policy</text>
-        <text x="92" y="284" font-size="11" fill="#94a3b8" font-family="ui-sans-serif,system-ui">HIPAA, SOX, attorney-client presets</text>
-
-        <text x="70" y="314" font-size="14" fill="#f8efe3" font-family="ui-sans-serif,system-ui">•</text>
-        <text x="92" y="314" font-size="14" font-weight="600" fill="#f8efe3" font-family="ui-sans-serif,system-ui">Budget ceiling</text>
-        <text x="92" y="332" font-size="11" fill="#94a3b8" font-family="ui-sans-serif,system-ui">runaway delegations stop themselves</text>
-
-        <!-- split -->
-        <line x1="250" y1="352" x2="250" y2="372" stroke="#0f172a" stroke-width="1.8"/>
-        <line x1="250" y1="372" x2="140" y2="408" stroke="#10b981" stroke-width="1.8" marker-end="url(#hv-arrow-green)"/>
-        <line x1="250" y1="372" x2="360" y2="408" stroke="#dc2626" stroke-width="1.8" marker-end="url(#hv-arrow-red)"/>
-
-        <!-- allowed -->
-        <rect x="30" y="420" width="200" height="92" rx="10" fill="#fff" stroke="#10b981" stroke-width="1.5"/>
-        <text x="130" y="442" text-anchor="middle" font-size="10.5" fill="#10b981" font-family="ui-monospace,monospace" font-weight="700" letter-spacing="1.2">✓ ALLOWED</text>
-        <text x="130" y="466" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">signed receipt</text>
-        <text x="130" y="484" text-anchor="middle" font-size="10.5" fill="#64748b" font-family="ui-monospace,monospace">policy = 4542ff75</text>
-        <text x="130" y="500" text-anchor="middle" font-size="10.5" fill="#64748b">verifiable offline</text>
-
-        <!-- blocked -->
-        <rect x="270" y="420" width="200" height="92" rx="10" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
-        <text x="370" y="442" text-anchor="middle" font-size="10.5" fill="#dc2626" font-family="ui-monospace,monospace" font-weight="700" letter-spacing="1.2">✗ BLOCKED</text>
-        <text x="370" y="466" text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a">precise reason</text>
-        <text x="370" y="484" text-anchor="middle" font-size="10.5" fill="#64748b" font-family="ui-monospace,monospace">CertiorBlocked</text>
-        <text x="370" y="500" text-anchor="middle" font-size="10.5" fill="#64748b">with violation detail</text>
-      </svg>
-    </div>
 
   </div>
 </section>
@@ -181,27 +121,6 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
   </div>
 </section>
 
-<!-- why now -->
-<section id="why-now" class="bg-white border-y border-warm">
-  <div class="max-w-6xl mx-auto px-6 py-16">
-    <p class="text-sm font-medium text-slate-600 mb-2 uppercase tracking-wide">Why now</p>
-    <h2 class="text-2xl sm:text-3xl font-bold mb-10 max-w-2xl">Multi-agent systems just shipped. The security model didn't.</h2>
-    <div class="grid sm:grid-cols-3 gap-6">
-      <div>
-        <div class="text-3xl font-bold mb-2">8</div>
-        <p class="text-sm text-slate-700 leading-relaxed">Distinct threat classes enumerated in a single multi-agent framework - prompt injection, ClawDrain tool-chain exploits, data exfiltration, privilege escalation via delegation, and more.<br><a href="https://arxiv.org/pdf/2603.12644" class="text-xs text-slate-500 underline hover:text-ink mt-2 inline-block">arXiv:2603.12644</a></p>
-      </div>
-      <div>
-        <div class="text-3xl font-bold mb-2">10,000+</div>
-        <p class="text-sm text-slate-700 leading-relaxed">MCP servers reachable in production with no capability boundary on their tool surface - public scan, 2025. Any agent that connects inherits every tool.</p>
-      </div>
-      <div>
-        <div class="text-3xl font-bold mb-2">30+</div>
-        <p class="text-sm text-slate-700 leading-relaxed">Organizations breached via agent supply-chain attacks during 2025 - compromised skills, prompt-injected tool calls, capability over-grant. Pattern matching alone did not stop them.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- how it works -->
 <section id="how-it-works" class="max-w-6xl mx-auto px-6 py-20">
@@ -294,11 +213,8 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
   <div class="max-w-6xl mx-auto px-6 py-16">
     <p class="text-sm font-medium text-slate-600 mb-2 uppercase tracking-wide">What's actually proven</p>
     <h2 class="text-2xl sm:text-3xl font-bold mb-4">A policy a Big-4 auditor can check.</h2>
-    <p class="text-slate-700 leading-relaxed mb-4 max-w-2xl">
-      Z3 runs on every tool call and proves the decision. Lean 4 machine-checks the policy model that Z3 enforces. Every signed receipt carries a fingerprint of the Lean source; an auditor reproduces the audit with a single <code class="mono text-sm bg-cream px-1 py-0.5 rounded border border-warm">lake build</code> command.
-    </p>
     <p class="text-slate-700 leading-relaxed max-w-2xl">
-      Certior does not verify the LLM's behaviour. It verifies the boundary the LLM operates inside. If an action violates the policy, it is provably blocked - and the policy itself is proven sound.
+      Z3 proves every tool-call decision; Lean 4 machine-checks the policy it enforces. Certior doesn't verify the model — it verifies the boundary the model runs inside, and an auditor re-checks it with a single <code class="mono text-sm bg-cream px-1 py-0.5 rounded border border-warm">lake build</code>.
     </p>
   </div>
 </section>
@@ -340,7 +256,6 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
         <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">Product</h4>
         <ul class="space-y-2.5 text-sm">
           <li><a href="#how-it-works" class="text-slate-700 hover:text-ink hover:underline">How it works</a></li>
-          <li><a href="#why-now" class="text-slate-700 hover:text-ink hover:underline">Why now</a></li>
           <li><a href="#try" class="text-slate-700 hover:text-ink hover:underline">Playground</a></li>
           <li><a href="https://docs.certior.io" class="text-slate-700 hover:text-ink hover:underline">Docs</a></li>
           <li><a href="https://github.com/paulinebourigault/certior" class="text-slate-700 hover:text-ink hover:underline">GitHub</a></li>
