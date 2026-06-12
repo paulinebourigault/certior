@@ -145,13 +145,24 @@ def setup_html(key):
 
 
 CSS = """
-.gradio-container {max-width: 1080px !important; margin: auto;}
+.gradio-container {max-width: 1080px !important; margin: auto; background: #f8efe3 !important;}
+body, gradio-app {background: #f8efe3 !important;}
 footer {display:none !important;}
 #hero {text-align:center; padding: 8px 0 4px;}
 """
 
+# The layout is designed for a light background; force light mode so the dark
+# hero/footer text stays readable regardless of the viewer's system theme.
+FORCE_LIGHT = """() => {
+  const url = new URL(window.location);
+  if (url.searchParams.get('__theme') !== 'light') {
+    url.searchParams.set('__theme', 'light');
+    window.location.replace(url.href);
+  }
+}"""
+
 with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
-               css=CSS, title="Certior — watch an AI agent get caught") as demo:
+               css=CSS, js=FORCE_LIGHT, title="Certior — watch an AI agent get caught") as demo:
     gr.HTML("""
     <div id="hero">
       <div style="font:800 30px ui-sans-serif;color:#0f172a">🛡️ Certior playground</div>
