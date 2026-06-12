@@ -200,4 +200,5 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
 
 
 if __name__ == "__main__":
-    demo.launch()
+    # HF Spaces proxies the app from 0.0.0.0:7860; the localhost default fails there.
+    demo.launch(server_name="0.0.0.0", server_port=7860)
