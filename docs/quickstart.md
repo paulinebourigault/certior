@@ -5,6 +5,10 @@ description: "Install Certior, create a Guard, see an allowed call return a cert
 
 Goal: in five minutes, you will install Certior, declare an agent's capability boundary, run an allowed call, run a blocked call, and read the audit log. No server, no LLM key.
 
+<Tip>
+Prefer to see it first? Try the [Certior playground](https://huggingface.co/spaces/paulibo/certior-playground) — watch a real agent get prompt-injected and blocked, in your browser, with no install.
+</Tip>
+
 ## 1. Install
 
 ```bash

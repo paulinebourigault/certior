@@ -32,6 +32,7 @@
     <span>Certior</span>
   </a>
   <div class="flex items-center gap-6 text-sm">
+    <a href="#try" class="hover:underline">Playground</a>
     <a href="#how-it-works" class="hover:underline">How it works</a>
     <a href="#why-now" class="hover:underline">Why now</a>
     <a href="https://docs.certior.io" class="hover:underline">Docs</a>
@@ -51,6 +52,18 @@
       <p class="text-lg sm:text-xl text-slate-700 leading-relaxed mb-8">
         A capability boundary for OpenClaw, LangChain, CrewAI, and your own delegation chains. Every agent-to-agent call is checked by Z3 against a Lean-audited policy before it runs.
       </p>
+
+      <!-- primary CTA: zero-install playground -->
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <a href="#try"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-md text-sm font-semibold hover:opacity-90 transition shadow-sm"
+           style="background-color:#10b981;color:#06281f;">
+          ▶ Try in browser
+          <span style="font-weight:500;opacity:.8;">— no install, no API key</span>
+        </a>
+        <a href="https://docs.certior.io/quickstart" class="text-sm font-medium text-slate-600 hover:text-ink underline">or the 5-line quickstart</a>
+      </div>
+      <p class="text-sm text-slate-600 mb-8">Watch a real GPT-4o agent get prompt-injected into leaking patient records — then blocked, with a signed proof.</p>
 
       <!-- code shape -->
       <div class="rounded-xl p-5 mb-6 shadow-sm overflow-x-auto" style="background-color: #0f172a;">
@@ -73,7 +86,7 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
             class="text-xs font-medium px-3 py-1.5 border border-warm rounded-md hover:bg-cream transition">Copy</button>
         </div>
       </div>
-      <p class="text-xs text-slate-500">Live on <a href="https://pypi.org/project/certior/" class="underline hover:text-ink">PyPI</a>, full walkthrough in the <a href="https://docs.certior.io/quickstart" class="underline hover:text-ink">quickstart</a>.</p>
+      <p class="text-xs text-slate-500">Live on <a href="https://pypi.org/project/certior/" class="underline hover:text-ink">PyPI</a>, try it in the <a href="https://huggingface.co/spaces/paulibo/certior-playground" class="underline hover:text-ink">playground</a>, full walkthrough in the <a href="https://docs.certior.io/quickstart" class="underline hover:text-ink">quickstart</a>.</p>
     </div>
 
     <!-- right: hero visual -->
@@ -136,6 +149,35 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
       </svg>
     </div>
 
+  </div>
+</section>
+
+<!-- try it -->
+<section id="try" class="bg-white border-y border-warm">
+  <div class="max-w-6xl mx-auto px-6 py-16">
+    <p class="text-sm font-medium text-slate-600 mb-2 uppercase tracking-wide">Try it · 30 seconds</p>
+    <h2 class="text-2xl sm:text-3xl font-bold mb-3 max-w-2xl">Watch a real agent get caught.</h2>
+    <p class="text-slate-700 mb-8 max-w-2xl">A real GPT-4o agent, prompt-injected through the very ticket it was asked to resolve. Same model, same attack — one capability boundary apart. No install, no API key; every verdict is computed live by Z3.</p>
+    <div class="grid sm:grid-cols-2 gap-4 mb-8">
+      <!-- without -->
+      <div class="rounded-xl p-5 border" style="border-color:rgba(220,38,38,.4);background:#fff5f5;">
+        <div class="text-xs font-bold mb-3 mono" style="color:#dc2626;letter-spacing:.5px;">WITHOUT CERTIOR</div>
+        <code class="block text-xs mono text-slate-700 leading-relaxed">agent → send_email(<br>&nbsp;&nbsp;to=<span style="color:#dc2626;">"data-archive@externalbackup.net"</span>)</code>
+        <div class="mt-4 font-bold text-sm" style="color:#dc2626;">☠ 4,812 patient records exfiltrated</div>
+      </div>
+      <!-- with -->
+      <div class="rounded-xl p-5 border" style="border-color:rgba(16,185,129,.5);background:#f0fdf4;">
+        <div class="text-xs font-bold mb-3 mono" style="color:#059669;letter-spacing:.5px;">WITH CERTIOR</div>
+        <code class="block text-xs mono text-slate-700 leading-relaxed">CertiorBlocked:<br>&nbsp;&nbsp;<span style="color:#059669;">missing_capability: email:send:external</span></code>
+        <div class="mt-4 font-bold text-sm" style="color:#059669;">🛡 Blocked — signed receipt issued</div>
+      </div>
+    </div>
+    <a href="https://huggingface.co/spaces/paulibo/certior-playground"
+       class="inline-flex items-center gap-2 px-6 py-3 rounded-md text-sm font-semibold hover:opacity-90 transition shadow-sm"
+       style="background-color:#10b981;color:#06281f;">
+      ▶ Try all four attacks in your browser
+    </a>
+    <p class="text-xs text-slate-500 mt-3">Exfiltration · CrewAI delegation escalation · $480k invoice fraud · runaway-budget blowout.</p>
   </div>
 </section>
 
@@ -310,8 +352,9 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
         <ul class="space-y-2.5 text-sm">
           <li><a href="#how-it-works" class="text-slate-700 hover:text-ink hover:underline">How it works</a></li>
           <li><a href="#why-now" class="text-slate-700 hover:text-ink hover:underline">Why now</a></li>
+          <li><a href="#try" class="text-slate-700 hover:text-ink hover:underline">Playground</a></li>
           <li><a href="https://docs.certior.io" class="text-slate-700 hover:text-ink hover:underline">Docs</a></li>
-          <li><a href="https://github.com/certior" class="text-slate-700 hover:text-ink hover:underline">GitHub</a></li>
+          <li><a href="https://github.com/paulinebourigault/certior" class="text-slate-700 hover:text-ink hover:underline">GitHub</a></li>
         </ul>
       </div>
 

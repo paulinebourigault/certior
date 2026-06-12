@@ -1,0 +1,15 @@
+{
+  "unguarded": {
+    "spawned": 31,
+    "spend_usd": 620.0,
+    "blocked_at": null
+  },
+  "certior_on": {
+    "spawned": 2,
+    "spend_usd": 40.0,
+    "blocked_at": "budget_exceeded: need 2000, have 1000"
+  },
+  "model": "gpt-4o",
+  "ceiling_usd": 50.0,
+  "worker_usd": 20.0
+}
