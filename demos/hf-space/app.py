@@ -148,6 +148,14 @@ CSS = """
 .gradio-container {max-width: 1080px !important; margin: auto;}
 footer {display:none !important;}
 #hero {text-align:center; padding: 8px 0 4px;}
+#single-r, #multi-r {border:none !important; box-shadow:none !important; background:transparent !important;}
+#single-r label:has(input), #multi-r label:has(input) {
+  border:1px solid rgba(148,163,184,.22); border-radius:10px; padding:9px 12px;
+  margin:3px 0; background:rgba(255,255,255,.03); transition:all .12s;
+}
+#single-r label:has(input):hover, #multi-r label:has(input):hover {
+  background:rgba(16,185,129,.10); border-color:rgba(16,185,129,.45);
+}
 """
 
 # The layout uses dark cards on a dark page; force dark mode so it's consistent
@@ -175,14 +183,18 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
     </div>
     """)
 
-    key = gr.Radio(
-        choices=[(f"{SCENARIOS['exfil']['emoji']}  Patient-data exfiltration  ·  single agent", "exfil"),
-                 (f"{SCENARIOS['deleg']['emoji']}  Delegation escalation  ·  CrewAI multi-agent", "deleg"),
-                 (f"{SCENARIOS['webinject']['emoji']}  Web page hijacks the agent  ·  LangChain multi-agent", "webinject"),
-                 (f"{SCENARIOS['sox']['emoji']}  Invoice fraud / SOX threshold  ·  $480k", "sox"),
-                 (f"{SCENARIOS['runaway']['emoji']}  Runaway delegation  ·  $620 budget blowout", "runaway")],
-        value="exfil", label="Pick an attack", show_label=True,
-    )
+    gr.HTML("<div style='font:700 12px ui-monospace,monospace;color:#94a3b8;letter-spacing:1px;margin:10px 2px 0'>PICK AN ATTACK</div>")
+    current = gr.State("exfil")
+    with gr.Row(equal_height=False):
+        single_r = gr.Radio(
+            choices=[(f"{SCENARIOS['exfil']['emoji']}  Patient-data exfiltration", "exfil"),
+                     (f"{SCENARIOS['sox']['emoji']}  Invoice fraud · SOX $480k", "sox"),
+                     (f"{SCENARIOS['runaway']['emoji']}  Runaway budget blowout", "runaway")],
+            value="exfil", label="Single-agent · OpenAI", elem_id="single-r")
+        multi_r = gr.Radio(
+            choices=[(f"{SCENARIOS['deleg']['emoji']}  Delegation escalation · CrewAI", "deleg"),
+                     (f"{SCENARIOS['webinject']['emoji']}  Web page hijacks the agent · LangChain", "webinject")],
+            value=None, label="Multi-agent", elem_id="multi-r")
     setup = gr.HTML(setup_html("exfil"))
     btn = gr.Button("▶  Run the attack", variant="primary", size="lg")
 
@@ -205,9 +217,17 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
     </div>
     """)
 
-    key.change(setup_html, key, setup)
-    key.change(lambda: (gr.update(visible=False), gr.update(visible=False)), None, [off_col, on_col])
-    btn.click(run_scenario, key, [off_col, on_col])
+    # Two grouped radios; .input fires only on user clicks (not the programmatic
+    # clear of the other group), so selecting one deselects the other cleanly.
+    def pick_single(v):
+        return v, gr.update(value=None), setup_html(v), gr.update(visible=False), gr.update(visible=False)
+
+    def pick_multi(v):
+        return v, gr.update(value=None), setup_html(v), gr.update(visible=False), gr.update(visible=False)
+
+    single_r.input(pick_single, single_r, [current, multi_r, setup, off_col, on_col])
+    multi_r.input(pick_multi, multi_r, [current, single_r, setup, off_col, on_col])
+    btn.click(run_scenario, current, [off_col, on_col])
 
 
 if __name__ == "__main__":
