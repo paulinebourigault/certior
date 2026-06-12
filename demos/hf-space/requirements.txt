@@ -1,7 +1,2 @@
 # Gradio itself is provided by the Space runtime (see sdk_version in README.md).
 certior
-# Restores the `audioop` module (removed from the stdlib in Python 3.13) that
-# Gradio 4.44's pydub dependency imports; only needed if the runtime is 3.13+.
-audioop-lts; python_version >= "3.13"
-# Gradio 4.44 imports HfFolder, which was removed from huggingface_hub 1.0.
-huggingface_hub<1.0
