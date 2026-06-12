@@ -100,3 +100,6 @@ docs/sprint*_summary.md
 lean4/CertiorPlan/verification-explorer.gif
 *.gif
 !docs/assets/*.gif
+
+# Homepage demo asset (overrides the *.gif ignore above)
+!docs/landing/multi-agent-demo.gif
