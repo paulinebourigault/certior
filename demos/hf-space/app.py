@@ -145,28 +145,27 @@ def setup_html(key):
 
 
 CSS = """
-.gradio-container {max-width: 1080px !important; margin: auto; background: #f8efe3 !important;}
-body, gradio-app {background: #f8efe3 !important;}
+.gradio-container {max-width: 1080px !important; margin: auto;}
 footer {display:none !important;}
 #hero {text-align:center; padding: 8px 0 4px;}
 """
 
-# The layout is designed for a light background; force light mode so the dark
-# hero/footer text stays readable regardless of the viewer's system theme.
-FORCE_LIGHT = """() => {
+# The layout uses dark cards on a dark page; force dark mode so it's consistent
+# for every viewer (and the light hero/footer text stays readable).
+FORCE_DARK = """() => {
   const url = new URL(window.location);
-  if (url.searchParams.get('__theme') !== 'light') {
-    url.searchParams.set('__theme', 'light');
+  if (url.searchParams.get('__theme') !== 'dark') {
+    url.searchParams.set('__theme', 'dark');
     window.location.replace(url.href);
   }
 }"""
 
 with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
-               css=CSS, js=FORCE_LIGHT, title="Certior — watch an AI agent get caught") as demo:
+               css=CSS, js=FORCE_DARK, title="Certior — watch an AI agent get caught") as demo:
     gr.HTML("""
     <div id="hero">
-      <div style="font:800 30px ui-sans-serif;color:#0f172a">🛡️ Certior playground</div>
-      <div style="font-size:15px;color:#475569;margin-top:6px;max-width:680px;margin-inline:auto;line-height:1.5">
+      <div style="font:800 30px ui-sans-serif;color:#f1f5f9">🛡️ Certior playground</div>
+      <div style="font-size:15px;color:#cbd5e1;margin-top:6px;max-width:680px;margin-inline:auto;line-height:1.5">
         A prompt that says “don’t” is not a security boundary. <b>A capability check on the action is.</b><br>
         Watch a <b>real</b> GPT-4o agent get prompt-injected — then watch Certior catch it, with a proof.
       </div>
@@ -191,16 +190,16 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
         on_col = gr.HTML(visible=False)
 
     gr.HTML("""
-    <div style="margin-top:18px;border-top:1px solid #e2e8f0;padding-top:16px;color:#475569;font-size:13.5px;line-height:1.6">
-      <b>What just happened.</b> The model fell for the injection both times — Certior doesn’t make the model safer,
+    <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;color:#cbd5e1;font-size:13.5px;line-height:1.6">
+      <b style="color:#f1f5f9">What just happened.</b> The model fell for the injection both times — Certior doesn’t make the model safer,
       it makes the model’s <i>actions</i> provably bounded. Z3 checks every tool call against a policy that’s
       machine-checked in Lean; allowed calls get a signed receipt an auditor can re-verify offline.
       <div style="margin-top:12px">
-        <code style="background:#0f172a;color:#f8efe3;padding:6px 12px;border-radius:8px;font-size:13px">pip install certior</code>
+        <code style="background:#020617;color:#6ee7b7;border:1px solid rgba(255,255,255,.12);padding:6px 12px;border-radius:8px;font-size:13px">pip install certior</code>
         &nbsp;&nbsp;
-        <a href="https://certior.io" style="color:#0f172a;font-weight:600">certior.io</a> ·
-        <a href="https://docs.certior.io" style="color:#0f172a;font-weight:600">docs</a> ·
-        <a href="https://docs.certior.io/quickstart" style="color:#0f172a;font-weight:600">5-line quickstart</a>
+        <a href="https://certior.io" style="color:#6ee7b7;font-weight:600">certior.io</a> ·
+        <a href="https://docs.certior.io" style="color:#6ee7b7;font-weight:600">docs</a> ·
+        <a href="https://docs.certior.io/quickstart" style="color:#6ee7b7;font-weight:600">5-line quickstart</a>
       </div>
     </div>
     """)
