@@ -82,6 +82,11 @@
           "anchor": "PyPI",
           "href": "https://pypi.org/project/certior/",
           "icon": "box"
+        },
+        {
+          "anchor": "Playground",
+          "href": "https://huggingface.co/spaces/paulibo/certior-playground",
+          "icon": "flask"
         }
       ]
     }
@@ -108,7 +113,8 @@
         "header": "Product",
         "items": [
           { "label": "Quickstart", "href": "/quickstart" },
-          { "label": "PyPI", "href": "https://pypi.org/project/certior/" }
+          { "label": "PyPI", "href": "https://pypi.org/project/certior/" },
+          { "label": "Playground", "href": "https://huggingface.co/spaces/paulibo/certior-playground" }
         ]
       },
       {
