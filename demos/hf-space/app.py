@@ -175,7 +175,7 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="emerald", neutral_hue="slate"),
       <div style="font:800 30px ui-sans-serif;color:#f1f5f9">🛡️ Certior playground</div>
       <div style="font-size:15px;color:#cbd5e1;margin-top:6px;max-width:680px;margin-inline:auto;line-height:1.5">
         A prompt that says “don’t” is not a security boundary. <b>A capability check on the action is.</b><br>
-        Watch <b>real</b> GPT-4o agents — single-agent and multi-agent — get hijacked, then watch Certior block the action with a proof.
+        Watch single-agent and multi-agents get hijacked, then watch Certior block the action with a proof.
       </div>
       <div style="font:600 11px ui-monospace,monospace;color:#10b981;margin-top:8px">
         zero install · no API key · every verdict computed live by Z3
