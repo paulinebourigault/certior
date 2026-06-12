@@ -6,7 +6,9 @@ demos/live/). Every Certior verdict on this page — allow, block, and the signe
 receipt — is computed live with real Z3 at the moment you click, by the same
 `certior` package that's on PyPI.
 """
+import base64
 import html
+import pathlib
 
 import gradio as gr
 from certior import Guard
@@ -19,6 +21,13 @@ POLICY = "hipaa"
 CREAM = "#f8efe3"; CARD = "#fffdf8"; INK = "#2a2017"; MUTED = "#7a6a58"; BODY = "#5c4f42"
 GOLD = "#b56b2a"; GREEN = "#157a3a"; RED = "#c1392b"
 BALOO = "'Baloo 2',system-ui,sans-serif"
+
+# the real logo, base64-embedded so the header matches certior.io (falls back to 🛡️)
+try:
+    _logo = base64.b64encode((pathlib.Path(__file__).parent / "logo.png").read_bytes()).decode()
+    LOGO = f"<img src='data:image/png;base64,{_logo}' alt='' style='height:36px;vertical-align:-9px;margin-right:9px'/>"
+except Exception:
+    LOGO = "🛡️ "
 
 
 # ── live Certior verdicts (Z3) ────────────────────────
@@ -167,7 +176,7 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="orange", neutral_hue="stone"),
                css=CSS, js=FORCE_LIGHT, title="Certior — watch an AI agent get caught") as demo:
     gr.HTML(f"""
     <div id="hero">
-      <div style="font-family:{BALOO};font-weight:800;font-size:32px;color:{INK}">🛡️ Certior playground</div>
+      <div style="font-family:{BALOO};font-weight:800;font-size:32px;color:{INK}">{LOGO}Certior playground</div>
       <div style="font-size:15px;color:{MUTED};margin-top:6px;max-width:680px;margin-inline:auto;line-height:1.55">
         A prompt that says “don’t” is not a security boundary. <b style="color:{INK}">A capability check on the action is.</b><br>
         Watch single-agent and multi-agent systems get hijacked, then watch Certior block the action with a proof.
