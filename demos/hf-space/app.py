@@ -29,6 +29,14 @@ try:
 except Exception:
     LOGO = "🛡️ "
 
+# Studio glass-box loop, base64-embedded so it plays on the Space with no file-serving
+# config (falls back to the hosted copy on certior.io if the bundled file is missing).
+try:
+    _vid = base64.b64encode((pathlib.Path(__file__).parent / "studio-hero-loop.mp4").read_bytes()).decode()
+    STUDIO_SRC = f"data:video/mp4;base64,{_vid}"
+except Exception:
+    STUDIO_SRC = "https://certior.io/studio-hero-loop.mp4"
+
 
 # ── live Certior verdicts (Z3) ────────────────────────
 def verify(need, held):
@@ -218,6 +226,19 @@ with gr.Blocks(theme=gr.themes.Base(primary_hue="orange", neutral_hue="stone"),
         <a href="https://docs.certior.io" style="color:{GOLD};font-weight:800">docs</a> ·
         <a href="https://docs.certior.io/quickstart" style="color:{GOLD};font-weight:800">5-line quickstart</a>
       </div>
+    </div>
+    """)
+
+    gr.HTML(f"""
+    <div style="margin-top:22px;border-top:1px solid rgba(42,32,23,.12);padding-top:18px">
+      <div style="font:800 12px Nunito,sans-serif;color:{GOLD};letter-spacing:1px;margin-bottom:8px">SEE IT IN THE CONTROL PLANE</div>
+      <div style="font-family:{BALOO};font-weight:800;font-size:21px;color:{INK};margin-bottom:5px">Certior Studio — the agent glass box</div>
+      <div style="color:{BODY};font-size:13.5px;line-height:1.6;margin-bottom:13px;max-width:660px">
+        The same checks you just ran, as a live control plane. Every hand-off is a node on the graph —
+        watch a privilege escalation get blocked <i>before</i> it runs, with the Lean-verified proof attached.
+      </div>
+      <video src="{STUDIO_SRC}" autoplay muted loop playsinline
+             style="width:100%;max-width:920px;border-radius:16px;border:1px solid rgba(42,32,23,.12);box-shadow:0 8px 30px rgba(42,32,23,.10);display:block"></video>
     </div>
     """)
 
