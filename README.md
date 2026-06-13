@@ -4,11 +4,18 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/paulinebourigault/certior/python-ci.yml?branch=main&label=CI)](https://github.com/paulinebourigault/certior/actions/workflows/python-ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/certior.svg)](https://pypi.org/project/certior/)
-[![Docs](https://img.shields.io/badge/docs-docs.certior.io-0F172A.svg)](https://docs.certior.io)
-[![Website](https://img.shields.io/badge/website-certior.io-0F172A.svg)](https://certior.io)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Open in Colab](https://img.shields.io/badge/Colab-run%20the%20quickstart-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/paulinebourigault/certior/blob/main/notebooks/quickstart.ipynb)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
+<p align="center">
+  <b>
+    <a href="https://certior.io">Website</a> &nbsp;·&nbsp;
+    <a href="https://docs.certior.io">Docs</a> &nbsp;·&nbsp;
+    <a href="https://huggingface.co/spaces/paulibo/certior-playground">▶ Live playground</a> &nbsp;·&nbsp;
+    <a href="https://colab.research.google.com/github/paulinebourigault/certior/blob/main/notebooks/quickstart.ipynb">Run the quickstart in Colab</a> &nbsp;·&nbsp;
+    <a href="https://pypi.org/project/certior/">PyPI</a>
+  </b>
+</p>
 
 <p align="center">
   <img src="docs/assets/architecture-hero.svg" alt="Certior gate flow: tool call → capability/content/budget gates → allowed (signed receipt) or blocked (precise reason)" width="100%" />
@@ -78,6 +85,8 @@ See [docs/bring-your-own-framework.md](docs/bring-your-own-framework.md) for per
 
 ## Examples
 
+**Try it first, no install** — the [▶ live playground on Hugging Face](https://huggingface.co/spaces/paulibo/certior-playground) runs real prompt-injection attacks (single- and multi-agent), lets you build your own capability boundary against live Z3, and shows the signed receipt for every allowed call.
+
 Runnable demos in [`examples/`](examples/):
 
 - [`wrapper_quickstart.py`](examples/wrapper_quickstart.py) - the 5-line recipe + all proof obligations
@@ -95,7 +104,7 @@ See [examples/README.md](examples/README.md) for the full list and which demo an
 | **Policy model** | Lean 4 | offline / CI | the lattice, delegation, IFC and composition rules the gate relies on are sound |
 | **Kernel properties** | Dafny | offline / CI | specific properties (path-safety, seccomp policy) are statically verified |
 
-What's proven today: **155 theorems, 0 `sorry`, 0 axioms beyond Lean's standard three** (`propext`, `Classical.choice`, `Quot.sound`). The model covers the shipped capability surface and is extended as new capabilities and policy classes land. CI (`.github/workflows/lean4-ci.yml`) fails the build if any guarantee stops depending only on Lean's standard axioms - any regression in the proof is caught at commit time.
+What's proven today: **150+ theorems, 0 `sorry`, 0 axioms beyond Lean's standard three** (`propext`, `Classical.choice`, `Quot.sound`). The model covers the shipped capability surface and is extended as new capabilities and policy classes land. CI (`.github/workflows/lean4-ci.yml`) fails the build if any guarantee stops depending only on Lean's standard axioms - any regression in the proof is caught at commit time.
 
 What Certior does *not* claim: it does not verify the LLM's behaviour. It verifies the **boundary** the LLM operates inside. If an action violates the policy, it is provably blocked - and the policy itself is proven sound.
 
