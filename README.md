@@ -8,6 +8,7 @@
 [![Website](https://img.shields.io/badge/website-certior.io-0F172A.svg)](https://certior.io)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Open in Colab](https://img.shields.io/badge/Colab-run%20the%20quickstart-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/paulinebourigault/certior/blob/main/notebooks/quickstart.ipynb)
 
 <p align="center">
   <img src="docs/assets/architecture-hero.svg" alt="Certior gate flow: tool call → capability/content/budget gates → allowed (signed receipt) or blocked (precise reason)" width="100%" />
@@ -23,16 +24,18 @@ pip install certior
 
 This installs the full runtime: every tool call is enforced by Z3 against the policy model that is **proven sound in Lean 4 offline**, and each allowed call returns a certificate bound to that model's fingerprint.
 
-For *live* lattice-proven information-flow verification on every call, fetch the Lean `certior-flow-check` binary on demand (it is not bundled in the wheel; ~90 MB, Linux x86_64 / macOS arm64):
+Optionally, fetch the Lean `certior-flow-check` binary for Lean-checked information-flow verification of execution plans (server-side plan verification; the per-call SDK path stays on Z3). It is not bundled in the wheel (~90 MB, Linux x86_64 / macOS arm64):
 
 ```bash
 pip install "certior[lean]"
 certior-install-lean          # downloads + SHA-256-verifies the binary, fails closed on mismatch
 ```
 
-Without it, the runtime stays on the always-on Z3 path. See [docs/lean-binary.md](docs/lean-binary.md).
+Without it, the runtime stays on the always-on Z3 path. See [docs/reference/lean-binary.md](docs/reference/lean-binary.md).
 
 ## Quickstart
+
+**Run it in your browser — no install, no key:** [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/paulinebourigault/certior/blob/main/notebooks/quickstart.ipynb)
 
 ```python
 from certior import Guard, CertiorBlocked
@@ -98,7 +101,15 @@ What Certior does *not* claim: it does not verify the LLM's behaviour. It verifi
 
 ## Server and Studio (optional, self-host)
 
-The repository also ships a FastAPI server and a Next.js dashboard for teams that want to self-host a control plane on top of the SDK:
+The repository also ships a FastAPI server and a Next.js dashboard — **Certior Studio** — for teams that want to self-host a control plane on top of the SDK:
+
+<p align="center">
+  <a href="https://huggingface.co/spaces/paulibo/certior-playground">
+    <img src="docs/assets/studio-live.png" alt="Certior Studio's Agent Glass Box: a privilege escalation blocked before execution, with the Lean-verified proof shown alongside" width="100%" />
+  </a>
+</p>
+
+<p align="center"><em>Studio's Agent Glass Box — a blocked privilege escalation with its proof. <a href="https://huggingface.co/spaces/paulibo/certior-playground">See it live →</a></em></p>
 
 ```bash
 pip install "certior[api]"        # FastAPI server + WebSocket streaming
@@ -115,10 +126,10 @@ Operator setup, runtime modes, and environment variables live in [OPERATIONS.md]
 |---|---|
 | Devs integrating Certior | [docs/guides/openai.md](docs/guides/openai.md), [docs/bring-your-own-framework.md](docs/bring-your-own-framework.md) |
 | Architecture / how it works | [docs/concepts/how-it-works.md](docs/concepts/how-it-works.md), [docs/openclaw-defenses.md](docs/openclaw-defenses.md) |
-| Auditors / customers | [docs/certior-trust-package.md](docs/certior-trust-package.md) |
+| Auditors / customers | [docs/reference/trust-package.md](docs/reference/trust-package.md) |
 | API reference | [docs/api-contract.md](docs/api-contract.md) |
-| Lean policy kernel | [docs/lean-binary.md](docs/lean-binary.md), [lean4/README.md](lean4/README.md) |
-| Skill auditing CLI | [docs/openclaw-skill-audit.md](docs/openclaw-skill-audit.md) |
+| Lean policy kernel | [docs/reference/lean-binary.md](docs/reference/lean-binary.md), [lean4/README.md](lean4/README.md) |
+| Skill auditing CLI | [docs/integrations/skill-audit.md](docs/integrations/skill-audit.md) |
 | Operators / deployment | [OPERATIONS.md](OPERATIONS.md), [CONFIGURATION.md](CONFIGURATION.md) |
 | Contributors / local dev | [DEVELOPER.md](DEVELOPER.md), [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Security disclosure | [SECURITY.md](SECURITY.md) |
