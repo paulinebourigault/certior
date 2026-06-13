@@ -7,6 +7,10 @@ The pip package is the SDK. The GitHub repository also ships **Certior Studio** 
 
 Studio is optional. The SDK works fully without it.
 
+<video src="/assets/studio-hero-loop.mp4" autoPlay muted loop playsInline className="w-full rounded-xl border" />
+
+*Studio's Agent Glass Box: a privilege escalation blocked before execution — the denied hand-off and its Lean-verified proof, side by side.*
+
 ## What Studio gives you
 
 - A live multi-agent delegation graph rendered from the server's `/api/v1/agents/delegation-graph` endpoint.
