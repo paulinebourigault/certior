@@ -5,6 +5,8 @@ description: "Install Certior, create a Guard, see an allowed call return a cert
 
 Goal: in five minutes, you will install Certior, declare an agent's capability boundary, run an allowed call, run a blocked call, and read the audit log. No server, no LLM key.
 
+[![Open the quickstart in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/paulinebourigault/certior/blob/main/notebooks/quickstart.ipynb) — run every step below in your browser, nothing to install.
+
 <Tip>
 Prefer to see it first? Try the [Certior playground](https://huggingface.co/spaces/paulibo/certior-playground) — watch a real agent get prompt-injected and blocked, in your browser, with no install.
 </Tip>

@@ -131,8 +131,9 @@ async def production_use_cases() -> ProductionUseCasesResponse:
             name="HIPAA-compliant patient discharge summary",
             purpose=(
                 "Single-agent workflow demonstrating PHI-safe clinical summarization "
-                "with Z3-proven data classification, Lean4 information flow control, "
-                "and Dafny-verified capability attenuation."
+                "with Z3-enforced capability and budget checks on every tool call, "
+                "against a policy model machine-checked in Lean 4 "
+                "(information-flow and delegation soundness)."
             ),
             payload={
                 "task": (
